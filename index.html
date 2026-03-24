@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Commander's Update Brief — OutPace AI</title>
+<style>
+  :root {
+    --navy: #0a1628;
+    --navy-mid: #132240;
+    --navy-light: #1a3058;
+    --platinum: #c0c6d0;
+    --platinum-light: #e0e4ea;
+    --accent-red: #e74c3c;
+    --accent-amber: #f39c12;
+    --accent-green: #27ae60;
+    --accent-blue: #3498db;
+    --text-primary: #f0f2f5;
+    --text-secondary: #9aa5b4;
+    --text-muted: #6b7a8d;
+    --border: rgba(192,198,208,0.12);
+    --card-bg: rgba(19,34,64,0.6);
+    --card-hover: rgba(26,48,88,0.8);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--navy);
+    color: var(--text-primary);
+    min-height: 100vh;
+    line-height: 1.5;
+  }
+  .header {
+    background: linear-gradient(135deg, var(--navy) 0%, var(--navy-mid) 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 20px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .header-left h1 {
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--platinum-light);
+  }
+  .header-left .subtitle {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+  .header-right {
+    text-align: right;
+  }
+  .header-right .date {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--platinum);
+  }
+  .header-right .time {
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+  .status-bar {
+    display: flex;
+    gap: 16px;
+    padding: 12px 24px;
+    background: var(--navy-mid);
+    border-bottom: 1px solid var(--border);
+    flex-wrap: wrap;
+  }
+  .status-chip {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 20px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+  }
+  .status-chip .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+  .dot-red { background: var(--accent-red); }
+  .dot-amber { background: var(--accent-amber); }
+  .dot-green { background: var(--accent-green); }
+  .dot-blue { background: var(--accent-blue); }
+
+  .tabs {
+    display: flex;
+    background: var(--navy-mid);
+    border-bottom: 2px solid var(--border);
+    padding: 0 24px;
+    overflow-x: auto;
+  }
+  .tab {
+    padding: 12px 20px;
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--text-muted);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    white-space: nowrap;
+    transition: all 0.2s;
+  }
+  .tab:hover { color: var(--text-secondary); }
+  .tab.active {
+    color: var(--platinum-light);
+    border-bottom-color: var(--accent-blue);
+  }
+
+  .content {
+    padding: 20px 24px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  .section {
+    margin-bottom: 24px;
+  }
+  .section-title {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  thead th {
+    text-align: left;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--text-muted);
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  tbody td {
+    padding: 10px 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    vertical-align: top;
+  }
+  tbody tr:hover {
+    background: var(--card-hover);
+  }
+
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .badge-red { background: rgba(231,76,60,0.15); color: var(--accent-red); border: 1px solid rgba(231,76,60,0.3); }
+  .badge-amber { background: rgba(243,156,18,0.15); color: var(--accent-amber); border: 1px solid rgba(243,156,18,0.3); }
+  .badge-green { background: rgba(39,174,96,0.15); color: var(--accent-green); border: 1px solid rgba(39,174,96,0.3); }
+  .badge-blue { background: rgba(52,152,219,0.15); color: var(--accent-blue); border: 1px solid rgba(52,152,219,0.3); }
+  .badge-gray { background: rgba(255,255,255,0.05); color: var(--text-muted); border: 1px solid var(--border); }
+
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 16px;
+  }
+  .card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    transition: background 0.2s;
+  }
+  .card:hover { background: var(--card-hover); }
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 8px;
+  }
+  .card-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+  .card-body {
+    font-size: 13px;
+    color: var(--text-secondary);
+  }
+  .card-meta {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 8px;
+  }
+
+  .cal-event {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    border-left: 3px solid var(--accent-blue);
+    background: var(--card-bg);
+    border-radius: 0 6px 6px 0;
+    margin-bottom: 8px;
+  }
+  .cal-time {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--platinum);
+    min-width: 70px;
+  }
+  .cal-title {
+    font-size: 13px;
+    color: var(--text-primary);
+  }
+  .cal-duration {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-left: auto;
+  }
+
+  .day-col {
+    flex: 1;
+    min-width: 140px;
+  }
+  .day-header {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 8px;
+  }
+  .day-header.today {
+    color: var(--accent-blue);
+    border-bottom-color: var(--accent-blue);
+  }
+  .week-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 8px;
+  }
+  .week-event {
+    padding: 6px 8px;
+    background: var(--card-bg);
+    border-left: 3px solid var(--accent-blue);
+    border-radius: 0 4px 4px 0;
+    margin-bottom: 4px;
+    font-size: 11px;
+  }
+  .week-event-time { color: var(--platinum); font-weight: 600; }
+  .week-event-title { color: var(--text-secondary); }
+
+  .follow-up-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    margin-bottom: 8px;
+  }
+  .follow-up-item .days {
+    font-size: 20px;
+    font-weight: 700;
+    min-width: 40px;
+    text-align: center;
+  }
+  .follow-up-item .detail { flex: 1; }
+  .follow-up-item .detail .name { font-size: 14px; font-weight: 600; }
+  .follow-up-item .detail .context { font-size: 12px; color: var(--text-muted); }
+
+  .dog-reminder {
+    background: linear-gradient(135deg, rgba(39,174,96,0.1) 0%, rgba(52,152,219,0.05) 100%);
+    border: 1px solid rgba(39,174,96,0.25);
+    border-radius: 8px;
+    padding: 16px;
+    text-align: center;
+    font-size: 15px;
+    margin-top: 16px;
+  }
+
+  .footer {
+    text-align: center;
+    padding: 20px;
+    font-size: 11px;
+    color: var(--text-muted);
+    border-top: 1px solid var(--border);
+  }
+
+  @media (max-width: 768px) {
+    .header { padding: 16px; }
+    .content { padding: 16px; }
+    .card-grid { grid-template-columns: 1fr; }
+    .week-grid { grid-template-columns: 1fr; }
+    .tabs { padding: 0 12px; }
+    .tab { padding: 10px 14px; font-size: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <h1>🎹 Commander's Update Brief</h1>
+    <div class="subtitle">OutPace AI — Combined Agent Operations Center</div>
+  </div>
+  <div class="header-right">
+    <div class="date">Tuesday, March 24, 2026</div>
+    <div class="time">Generated 0800 CT • Next refresh: Tomorrow 0800</div>
+  </div>
+</div>
+
+<div class="status-bar">
+  <div class="status-chip"><span class="dot dot-red"></span> 3 Action Required</div>
+  <div class="status-chip"><span class="dot dot-amber"></span> 5 Overdue Tasks</div>
+  <div class="status-chip"><span class="dot dot-green"></span> 3 Crons Active</div>
+  <div class="status-chip"><span class="dot dot-blue"></span> 6 Drafts Ready</div>
+</div>
+
+<div class="tabs">
+  <div class="tab active" data-tab="today">📋 Today</div>
+  <div class="tab" data-tab="week">📅 Week</div>
+  <div class="tab" data-tab="tasks">✅ Tasks</div>
+  <div class="tab" data-tab="followups">📬 Follow-Ups</div>
+</div>
+
+<div class="content">
+
+  <!-- ===== TODAY TAB ===== -->
+  <div class="tab-panel active" id="today">
+
+    <div class="section">
+      <div class="section-title">🔴 Priority Email — Action Required</div>
+      <table>
+        <thead>
+          <tr><th>From</th><th>Subject</th><th>Action</th><th>Status</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Alvin Carrero</strong><br><span style="color:var(--text-muted)">SAPAC (cc: Matt, Brant)</span></td>
+            <td>BD Project Update — Built HigherGov Gate 0 screening in ChatGPT. Attached Paramount criteria + raw data.</td>
+            <td>"Is this the same direction you're thinking?"</td>
+            <td><span class="badge badge-red">Reply Needed</span></td>
+          </tr>
+          <tr>
+            <td><strong>Abbi Johnson</strong><br><span style="color:var(--text-muted)">AMJ Consulting</span></td>
+            <td>Site 525 — Contracting pathways paper for Muscatatuck Training Center (INNG)</td>
+            <td>Review paper + provide pricing</td>
+            <td><span class="badge badge-red">Reply Needed</span></td>
+          </tr>
+          <tr>
+            <td><strong>Coleman Research Group</strong><br><span style="color:var(--text-muted)">Trinity Allman</span></td>
+            <td>New Request: Aerospace & Defense — AI Drone Technology</td>
+            <td>Expert network consultation — in your lane</td>
+            <td><span class="badge badge-amber">Review</span></td>
+          </tr>
+          <tr>
+            <td><strong>M&Q Project Portal</strong></td>
+            <td>NSF CyberAI SFS — CyberAICorps Scholarship for Service Reviewer</td>
+            <td>Reviewer role, due Apr 3. Respond if interested.</td>
+            <td><span class="badge badge-blue">Opportunity</span></td>
+          </tr>
+          <tr>
+            <td><strong>M&Q Project Portal</strong></td>
+            <td>Lilly Endowment Inc. — Foundation Application Reviewer</td>
+            <td>Reviewer role available</td>
+            <td><span class="badge badge-blue">Opportunity</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-title">🟡 Decisions Queued</div>
+      <div class="card-grid">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">GitHub Actions</div>
+            <span class="badge badge-amber">This Week</span>
+          </div>
+          <div class="card-body">90% of 2,000 monthly minutes used. 4 CI runs failed overnight (R2D2 + D2D). Resets Apr 1.</div>
+          <div class="card-meta">Decision: Throttle CI or accept overage</div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">TechSmith Screencast Pro</div>
+            <span class="badge badge-amber">Apr 5</span>
+          </div>
+          <div class="card-body">$99.99 auto-renewal scheduled for April 7, 2026.</div>
+          <div class="card-meta">Decision: Keep or cancel subscription</div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">GLG Paid Survey</div>
+            <span class="badge badge-gray">Low</span>
+          </div>
+          <div class="card-body">Monica Civille — expert network paid survey invitation.</div>
+          <div class="card-meta">Respond if interested</div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">GovPurchase Follow-Up</div>
+            <span class="badge badge-gray">Low</span>
+          </div>
+          <div class="card-body">Kim Harwell — "How is GovPurchase working for OutPace?" Sales check-in.</div>
+          <div class="card-meta">Reply only if you have feedback</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">📅 Today's Calendar</div>
+      <div class="cal-event">
+        <div class="cal-time">12:00 PM</div>
+        <div class="cal-title">🍽️ Lunch Break</div>
+        <div class="cal-duration">30 min</div>
+      </div>
+      <div class="cal-event" style="border-left-color: var(--accent-green);">
+        <div class="cal-time">4:00 PM</div>
+        <div class="cal-title">🐕 Dog Time — Yard / Walk / Play</div>
+        <div class="cal-duration">1 hr</div>
+      </div>
+      <p style="color: var(--text-muted); font-size: 13px; margin-top: 8px;">No meetings scheduled. Open day.</p>
+    </div>
+
+    <div class="section">
+      <div class="section-title">ℹ️ FYI — No Action Needed</div>
+      <table>
+        <thead><tr><th>Item</th><th>Detail</th></tr></thead>
+        <tbody>
+          <tr><td>Chase Ink Business Premier</td><td>Auto-payment scheduled</td></tr>
+          <tr><td>Michael Edgar (LinkedIn)</td><td>New LinkedIn message overnight (5th unread). Roger handles per standing orders.</td></tr>
+          <tr><td>Karen — ID.me</td><td>MFA enabled on ID.me account</td></tr>
+          <tr><td>Todoist</td><td>2 due, 10+ overdue (mirrored in Tasks tab)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="dog-reminder">
+      🐕 Don't forget the girls — find 30 min for yard time today.
+    </div>
+  </div>
+
+  <!-- ===== WEEK TAB ===== -->
+  <div class="tab-panel" id="week">
+    <div class="section">
+      <div class="section-title">📅 Week of March 24–30, 2026</div>
+      <div class="week-grid">
+        <div class="day-col">
+          <div class="day-header today">Mon 24 (Today)</div>
+          <div class="week-event">
+            <div class="week-event-time">12:00p</div>
+            <div class="week-event-title">🍽️ Lunch</div>
+          </div>
+          <div class="week-event">
+            <div class="week-event-time">4:00p</div>
+            <div class="week-event-title">🐕 Dog Time</div>
+          </div>
+        </div>
+        <div class="day-col">
+          <div class="day-header">Tue 25</div>
+          <div class="week-event">
+            <div class="week-event-time">12:00p</div>
+            <div class="week-event-title">🍽️ Lunch</div>
+          </div>
+          <div class="week-event">
+            <div class="week-event-time">4:00p</div>
+            <div class="week-event-title">🐕 Dog Time</div>
+          </div>
+        </div>
+        <div class="day-col">
+          <div class="day-header">Wed 26</div>
+          <div class="week-event">
+            <div class="week-event-time">12:00p</div>
+            <div class="week-event-title">🍽️ Lunch</div>
+          </div>
+          <div class="week-event">
+            <div class="week-event-time">4:00p</div>
+            <div class="week-event-title">🐕 Dog Time</div>
+          </div>
+        </div>
+        <div class="day-col">
+          <div class="day-header">Thu 27</div>
+          <div class="week-event">
+            <div class="week-event-time">12:00p</div>
+            <div class="week-event-title">🍽️ Lunch</div>
+          </div>
+          <div class="week-event">
+            <div class="week-event-time">4:00p</div>
+            <div class="week-event-title">🐕 Dog Time</div>
+          </div>
+        </div>
+        <div class="day-col">
+          <div class="day-header">Fri 28</div>
+          <div class="week-event">
+            <div class="week-event-time">4:00p</div>
+            <div class="week-event-title">🐕 Dog Time</div>
+          </div>
+        </div>
+        <div class="day-col">
+          <div class="day-header">Sat 29</div>
+          <div class="week-event">
+            <div class="week-event-time">4:00p</div>
+            <div class="week-event-title">🐕 Dog Time</div>
+          </div>
+        </div>
+        <div class="day-col">
+          <div class="day-header">Sun 30</div>
+          <div class="week-event" style="border-left-color: var(--accent-amber);">
+            <div class="week-event-time">—</div>
+            <div class="week-event-title">⏰ GitHub Actions reset (Apr 1)</div>
+          </div>
+        </div>
+      </div>
+      <p style="color: var(--text-muted); font-size: 12px; margin-top: 12px;">Light week. No external meetings on calendar. Good window for deep work and clearing the punch list.</p>
+    </div>
+
+    <div class="section">
+      <div class="section-title">⏰ Key Dates Ahead</div>
+      <table>
+        <thead><tr><th>Date</th><th>Item</th><th>Type</th></tr></thead>
+        <tbody>
+          <tr><td>Apr 1</td><td>GitHub Actions minutes reset (2,000)</td><td><span class="badge badge-blue">Auto</span></td></tr>
+          <tr><td>Apr 1</td><td>Mitchell Institute Spacepower Security Forum (new speakers added)</td><td><span class="badge badge-gray">Event</span></td></tr>
+          <tr><td>Apr 3</td><td>M&Q NSF CyberAI SFS Reviewer — Due</td><td><span class="badge badge-amber">Deadline</span></td></tr>
+          <tr><td>Apr 7</td><td>TechSmith Screencast Pro — $99.99 auto-renew</td><td><span class="badge badge-red">$$</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ===== TASKS TAB ===== -->
+  <div class="tab-panel" id="tasks">
+
+    <div class="section">
+      <div class="section-title">🔴 Overdue</div>
+      <table>
+        <thead><tr><th>Task</th><th>Due</th><th>Days Late</th><th>Owner</th><th>Proactive?</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>MO Taxes Notice</strong></td>
+            <td>Mar 14</td>
+            <td><span class="badge badge-red">10 days</span></td>
+            <td>Rob</td>
+            <td><span class="badge badge-gray">No — Rob only</span></td>
+          </tr>
+          <tr>
+            <td><strong>Camper battery</strong></td>
+            <td>Mar 15</td>
+            <td><span class="badge badge-red">9 days</span></td>
+            <td>Rob</td>
+            <td><span class="badge badge-gray">No — physical</span></td>
+          </tr>
+          <tr>
+            <td><strong>Jessica Powell — draft replies (x2)</strong></td>
+            <td>Mar 19</td>
+            <td><span class="badge badge-amber">5 days</span></td>
+            <td>Rob (review)</td>
+            <td><span class="badge badge-green">Drafts exist — needs Rob GO</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-title">🔴 Critical Path</div>
+      <table>
+        <thead><tr><th>ID</th><th>Task</th><th>Status</th><th>Owner</th><th>Proactive?</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>#053</td>
+            <td><strong>PIEE Registration → BAA Submission (Sanford)</strong></td>
+            <td><span class="badge badge-red">Not Started</span></td>
+            <td>Rob</td>
+            <td><span class="badge badge-gray">No — requires Rob's credentials</span></td>
+          </tr>
+          <tr>
+            <td>#057</td>
+            <td><strong>Google Drive SSOT Migration</strong></td>
+            <td><span class="badge badge-blue">In Progress</span></td>
+            <td>Rick</td>
+            <td><span class="badge badge-green">Yes — Phase 3 QC pending</span></td>
+          </tr>
+          <tr>
+            <td>#037</td>
+            <td><strong>SBA SDVOSB — Restart Application</strong></td>
+            <td><span class="badge badge-amber">Restarting</span></td>
+            <td>Rick / Rob</td>
+            <td><span class="badge badge-amber">Research: yes. Filing: Rob</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-title">📋 Active Tasks — Full Board</div>
+      <table>
+        <thead><tr><th>ID</th><th>Task</th><th>Status</th><th>Priority</th><th>Owner</th><th>Proactive?</th></tr></thead>
+        <tbody>
+          <tr><td>#014</td><td>SAPAC SOW Response</td><td><span class="badge badge-green">In Execution</span></td><td>High</td><td>Rick</td><td><span class="badge badge-green">Yes</span></td></tr>
+          <tr><td>#022</td><td>MTS Forge LinkedIn Content Strategy</td><td><span class="badge badge-green">Delivered</span></td><td>High</td><td>Rick</td><td>✅ Done</td></tr>
+          <tr><td>#023</td><td>CAOC Dashboard</td><td><span class="badge badge-amber">Rob Review</span></td><td>High</td><td>Rob</td><td><span class="badge badge-gray">Awaiting review</span></td></tr>
+          <tr><td>#024</td><td>OutPace Website — Finish All Pages</td><td><span class="badge badge-amber">Rob Review</span></td><td>High</td><td>Rob</td><td><span class="badge badge-gray">Awaiting review</span></td></tr>
+          <tr><td>#054</td><td>SpaceWERX Orbital Warehouse Research</td><td><span class="badge badge-blue">In Progress</span></td><td>High</td><td>Rick</td><td><span class="badge badge-green">Yes</span></td></tr>
+          <tr><td>#055</td><td>MTS Forge Activation — Forging Opportunities</td><td><span class="badge badge-blue">In Progress</span></td><td>High</td><td>Rick</td><td><span class="badge badge-green">Yes</span></td></tr>
+          <tr><td>#058</td><td>LLM Data Export Analysis</td><td><span class="badge badge-blue">In Progress</span></td><td>High</td><td>Rick</td><td><span class="badge badge-green">Yes</span></td></tr>
+          <tr><td>—</td><td>VA CUE Claim — Type 2 Narcolepsy</td><td><span class="badge badge-red">Needs Filing</span></td><td>High</td><td>Rob / Rick</td><td><span class="badge badge-amber">Research: yes. Filing: Rob</span></td></tr>
+          <tr><td>#002</td><td>Rick Email Account</td><td><span class="badge badge-gray">Not Started</span></td><td>High</td><td>Rick</td><td><span class="badge badge-green">Yes</span></td></tr>
+          <tr><td>#003</td><td>SDVOSB Status</td><td><span class="badge badge-gray">Not Started</span></td><td>High</td><td>Rob</td><td><span class="badge badge-amber">Research: yes</span></td></tr>
+          <tr><td>#009</td><td>Templates & Letterhead</td><td><span class="badge badge-gray">Not Started</span></td><td>High</td><td>Rick</td><td><span class="badge badge-green">Yes</span></td></tr>
+          <tr><td>#031</td><td>Git Repos — Organize & Complete</td><td><span class="badge badge-gray">Not Started</span></td><td>High</td><td>Rick</td><td><span class="badge badge-green">Yes</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-title">📨 Email Drafts Ready (Pending Rob GO)</div>
+      <table>
+        <thead><tr><th>To</th><th>Subject</th><th>Tone</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td>JC Henry</td><td>OBBBA analysis catch-up + call scheduling</td><td>Casual (20-yr friend)</td><td><span class="badge badge-green">Draft Ready</span></td></tr>
+          <tr><td>Tubby Shwedo (UCF)</td><td>Post-meeting follow-up</td><td>Professional (Michael intro)</td><td><span class="badge badge-green">Draft Ready</span></td></tr>
+          <tr><td>Adam Merchant (LEAP)</td><td>Ready to move on TO#1, JD intro</td><td>Professional (revised)</td><td><span class="badge badge-green">Draft Ready</span></td></tr>
+          <tr><td>Bryan Tkacs</td><td>cBEYONData/SMX opportunity follow-up</td><td>Casual (brother level)</td><td><span class="badge badge-amber">Needs Draft</span></td></tr>
+          <tr><td>Mark Johnson</td><td>LOA follow-up</td><td>Professional/military</td><td><span class="badge badge-amber">Needs Draft</span></td></tr>
+          <tr><td>Alex Bandar</td><td>HAMMER demo scheduling (+ Glenn Daehn)</td><td>Professional</td><td><span class="badge badge-amber">Needs Draft</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-title">⏸️ Waiting on Rob</div>
+      <table>
+        <thead><tr><th>ID</th><th>Task</th><th>What's Needed</th></tr></thead>
+        <tbody>
+          <tr><td>#004</td><td>LinkedIn Posting — Rob</td><td>Voice, topics, approval process</td></tr>
+          <tr><td>#006</td><td>GitHub Apps Working</td><td>GitHub username</td></tr>
+          <tr><td>#007</td><td>Nonprofit Launch (July 4)</td><td>Specifics on nonprofit type</td></tr>
+          <tr><td>#008</td><td>Client Acquisition</td><td>Target clients, pipeline approach</td></tr>
+          <tr><td>—</td><td>Karen's TRICARE payment</td><td>What plan? What error?</td></tr>
+          <tr><td>—</td><td>MO Vehicle Registration</td><td>Vehicle count</td></tr>
+          <tr><td>—</td><td>Guitar practice plan</td><td>Setlist / genre</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <div class="section-title">🏥 Personal / Admin</div>
+      <table>
+        <thead><tr><th>Item</th><th>Status</th><th>Proactive?</th></tr></thead>
+        <tbody>
+          <tr><td>MO Taxes</td><td><span class="badge badge-red">10 days overdue</span></td><td><span class="badge badge-gray">Rob only</span></td></tr>
+          <tr><td>MO Vehicle Registration</td><td>Way overdue — $25 penalty + $25/30 days</td><td><span class="badge badge-amber">Research: yes</span></td></tr>
+          <tr><td>Karen — Reschedule MRI</td><td>Needs scheduling</td><td><span class="badge badge-gray">Karen</span></td></tr>
+          <tr><td>Karen — Reschedule SITs test</td><td>Needs scheduling</td><td><span class="badge badge-gray">Karen</span></td></tr>
+          <tr><td>Karen — Dr. Chapman follow-up</td><td>Needs scheduling (telemedicine)</td><td><span class="badge badge-gray">Karen</span></td></tr>
+          <tr><td>Vet appointments (4 dogs)</td><td>Need to schedule wellness + Peridot spay</td><td><span class="badge badge-green">Rick can research vets</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ===== FOLLOW-UPS TAB ===== -->
+  <div class="tab-panel" id="followups">
+    <div class="section">
+      <div class="section-title">📬 Sent — No Reply (Rob sent, waiting on response)</div>
+      <div class="follow-up-item">
+        <div class="days" style="color: var(--accent-amber);">4d</div>
+        <div class="detail">
+          <div class="name">JC Henry</div>
+          <div class="context">Sent OBBBA Spend Plan (Mar 20). No reply. Draft catch-up email ready.</div>
+        </div>
+        <span class="badge badge-amber">Needs Nudge</span>
+      </div>
+      <div class="follow-up-item">
+        <div class="days" style="color: var(--accent-amber);">4d</div>
+        <div class="detail">
+          <div class="name">Alex Bandar (HAMMER/OSU)</div>
+          <div class="context">Replied to ISC RSVP (Mar 18 → Mar 20 event). No response. Missed the meeting.</div>
+        </div>
+        <span class="badge badge-amber">Needs Follow-Up</span>
+      </div>
+      <div class="follow-up-item">
+        <div class="days" style="color: var(--text-muted);">2d</div>
+        <div class="detail">
+          <div class="name">Michael Edgar</div>
+          <div class="context">Forwarded MDC's Intro (Mar 22). Roger handles. 5th unread LinkedIn message.</div>
+        </div>
+        <span class="badge badge-gray">Roger's Lane</span>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">📥 Inbound — Rob Hasn't Replied</div>
+      <div class="follow-up-item">
+        <div class="days" style="color: var(--accent-red);">0d</div>
+        <div class="detail">
+          <div class="name">Alvin Carrero (SAPAC)</div>
+          <div class="context">"Is this the same direction you are thinking?" — BD Project Update with HigherGov Gate 0 demo. Sent last night.</div>
+        </div>
+        <span class="badge badge-red">Reply Today</span>
+      </div>
+      <div class="follow-up-item">
+        <div class="days" style="color: var(--accent-red);">1d</div>
+        <div class="detail">
+          <div class="name">Abbi Johnson (AMJ Consulting)</div>
+          <div class="context">"What would you charge for a paper like this?" — Site 525 contracting pathways for Muscatatuck/INNG.</div>
+        </div>
+        <span class="badge badge-red">Reply Today</span>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">⚠️ Overdue Agent Comms (GLOC)</div>
+      <table>
+        <thead><tr><th>Agent</th><th>Last Check-In</th><th>Days Silent</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td>Roger</td><td>Mar 18</td><td><span class="badge badge-amber">6 days</span></td><td>Needs updated standing orders re: Michael Edgar</td></tr>
+          <tr><td>Samantha</td><td>Mar 18</td><td><span class="badge badge-amber">6 days</span></td><td>Last check-in 6 days ago</td></tr>
+          <tr><td>David</td><td>—</td><td>—</td><td>Not deployed</td></tr>
+          <tr><td>Nick</td><td>—</td><td>—</td><td>Not deployed</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<div class="footer">
+  OutPace AI — CAOC • Generated by Rick • Auto-refreshes daily at 0800 CT
+</div>
+
+<script>
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById(tab.dataset.tab).classList.add('active');
+    });
+  });
+</script>
+</body>
+</html>
