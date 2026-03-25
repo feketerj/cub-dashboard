@@ -1,0 +1,4702 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NotebookLM Intelligence Dashboard</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: #0a0e17; color: #e0e0e0; }
+.header { background: linear-gradient(135deg, #1a1f2e 0%, #0d1117 100%); padding: 24px 32px; border-bottom: 1px solid #30363d; }
+.header h1 { font-size: 24px; color: #58a6ff; margin-bottom: 4px; }
+.header .subtitle { color: #8b949e; font-size: 14px; }
+.stats-bar { display: flex; gap: 24px; padding: 16px 32px; background: #161b22; border-bottom: 1px solid #21262d; flex-wrap: wrap; }
+.stat { text-align: center; min-width: 100px; }
+.stat .number { font-size: 28px; font-weight: 700; color: #58a6ff; }
+.stat .label { font-size: 11px; color: #8b949e; text-transform: uppercase; letter-spacing: 1px; }
+.main { display: grid; grid-template-columns: 300px 1fr; min-height: calc(100vh - 140px); }
+.sidebar { background: #161b22; border-right: 1px solid #21262d; padding: 16px; overflow-y: auto; max-height: calc(100vh - 140px); }
+.sidebar h3 { color: #58a6ff; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+.cat-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; border-radius: 6px; cursor: pointer; margin-bottom: 4px; transition: background 0.2s; }
+.cat-item:hover, .cat-item.active { background: #21262d; }
+.cat-item .name { font-size: 13px; }
+.cat-item .count { background: #30363d; color: #8b949e; font-size: 11px; padding: 2px 8px; border-radius: 10px; }
+.content { padding: 24px; overflow-y: auto; max-height: calc(100vh - 140px); }
+.tabs { display: flex; gap: 8px; margin-bottom: 20px; }
+.tab { padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 13px; background: #21262d; color: #8b949e; border: 1px solid #30363d; transition: all 0.2s; }
+.tab:hover, .tab.active { background: #30363d; color: #58a6ff; border-color: #58a6ff; }
+.search { width: 100%; padding: 10px 14px; border-radius: 6px; border: 1px solid #30363d; background: #0d1117; color: #e0e0e0; font-size: 14px; margin-bottom: 16px; }
+.search:focus { outline: none; border-color: #58a6ff; }
+.nb-card { background: #161b22; border: 1px solid #21262d; border-radius: 8px; padding: 16px; margin-bottom: 12px; transition: border-color 0.2s; }
+.nb-card:hover { border-color: #30363d; }
+.nb-card .title { font-size: 15px; font-weight: 600; color: #e0e0e0; margin-bottom: 6px; }
+.nb-card .meta { display: flex; gap: 16px; font-size: 12px; color: #8b949e; flex-wrap: wrap; }
+.nb-card .meta span { display: flex; align-items: center; gap: 4px; }
+.nb-card .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; background: #1f3a5f; color: #58a6ff; margin-right: 6px; }
+.nb-card .sources-list { margin-top: 8px; padding-top: 8px; border-top: 1px solid #21262d; font-size: 12px; color: #8b949e; max-height: 0; overflow: hidden; transition: max-height 0.3s; }
+.nb-card.expanded .sources-list { max-height: 500px; }
+.nb-card .expand-btn { cursor: pointer; color: #58a6ff; font-size: 12px; margin-top: 6px; display: inline-block; }
+.chart-container { background: #161b22; border: 1px solid #21262d; border-radius: 8px; padding: 20px; margin-bottom: 16px; }
+.chart-container h3 { color: #58a6ff; font-size: 14px; margin-bottom: 12px; }
+.bar-chart { display: flex; flex-direction: column; gap: 6px; }
+.bar-row { display: flex; align-items: center; gap: 8px; }
+.bar-label { width: 140px; font-size: 12px; color: #8b949e; text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bar { height: 20px; background: linear-gradient(90deg, #1f6feb, #58a6ff); border-radius: 3px; transition: width 0.5s; min-width: 2px; }
+.bar-value { font-size: 11px; color: #8b949e; min-width: 30px; }
+.timeline { position: relative; padding-left: 20px; }
+.timeline::before { content: ''; position: absolute; left: 8px; top: 0; bottom: 0; width: 2px; background: #21262d; }
+.tl-item { position: relative; padding: 8px 0 8px 20px; }
+.tl-item::before { content: ''; position: absolute; left: -5px; top: 12px; width: 10px; height: 10px; background: #58a6ff; border-radius: 50%; border: 2px solid #0d1117; }
+.tl-item .date { font-size: 11px; color: #58a6ff; }
+.tl-item .tl-name { font-size: 13px; color: #e0e0e0; }
+.tl-item .tl-cat { font-size: 11px; color: #8b949e; }
+.people-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+.person-card { background: #161b22; border: 1px solid #21262d; border-radius: 8px; padding: 12px; }
+.person-card .p-name { font-size: 14px; font-weight: 600; color: #e0e0e0; }
+.person-card .p-role { font-size: 12px; color: #8b949e; }
+.person-cat { margin-bottom: 16px; }
+.person-cat h4 { color: #58a6ff; font-size: 13px; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
+.hot-badge { background: #da3633; color: #fff; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+.sensitive-badge { background: #d29922; color: #000; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+</style>
+</head>
+<body>
+<div class="header">
+    <h1>🎹 NotebookLM Intelligence Dashboard</h1>
+    <div class="subtitle">Google Takeout Export Analysis &mdash; 140 Notebooks &bull; 8.2 GB &bull; Exported 2026-03-25</div>
+</div>
+<div class="stats-bar">
+    <div class="stat"><div class="number">140</div><div class="label">Notebooks</div></div>
+    <div class="stat"><div class="number">1458</div><div class="label">Sources</div></div>
+    <div class="stat"><div class="number">6,221</div><div class="label">Total Files</div></div>
+    <div class="stat"><div class="number">10398 MB</div><div class="label">Total Size</div></div>
+    <div class="stat"><div class="number">12</div><div class="label">Gemini Gems</div></div>
+    <div class="stat"><div class="number">116</div><div class="label">People Found</div></div>
+</div>
+<div class="main">
+    <div class="sidebar">
+        <h3>Categories</h3>
+        <div class="cat-item active" onclick="filterCategory('all')">
+            <span class="name">All Notebooks</span>
+            <span class="count">140</span>
+        </div>
+        <div class="cat-item" onclick="filterCategory('Other')">
+            <span class="name">Other</span>
+            <span class="count">37</span>
+        </div>
+        <div class="cat-item" onclick="filterCategory('NSN/Manufacturing')">
+            <span class="name">NSN/Manufacturing</span>
+            <span class="count">23</span>
+        </div>
+        <div class="cat-item" onclick="filterCategory('Defense')">
+            <span class="name">Defense</span>
+            <span class="count">13</span>
+        </div>
+        <div class="cat-item" onclick="filterCategory('Spec-Driven Dev')">
+            <span class="name">Spec-Driven Dev</span>
+            <span class="count">13</span>
+        </div>
+        <div class="cat-item" onclick="filterCategory('AI/ML')">
+            <span class="name">AI/ML</span>
+            <span class="count">10</span>
+        </div>
+        <div class="cat-item" onclick="filterCategory('Business Dev')">
+            <span class="name">Business Dev</span>
+            <span class="count">8</span>
+        </div>
+        <div class="cat-item" onclick="filterCategory('OutPace')">
+            <span class="name">OutPace</span>
+            <span class="count">8</span>
+        </div>
+        <div class="cat-item" onclick="filterCategory('OpenClaw')">
+            <span class="name">OpenClaw</span>
+            <span class="count">6</span>
+        </div>
+        <div class="cat-item" onclick="filterCategory('Gov Opportunities')">
+            <span class="name">Gov Opportunities</span>
+            <span class="count">4</span>
+        </div>
+        <div class="cat-item" onclick="filterCategory('NotebookLM')">
+            <span class="name">NotebookLM</span>
+            <span class="count">4</span>
+        </div>
+        <div class="cat-item" onclick="filterCategory('Career/Personal')">
+            <span class="name">Career/Personal</span>
+            <span class="count">3</span>
+        </div>
+        <div class="cat-item" onclick="filterCategory('Defense Tech')">
+            <span class="name">Defense Tech</span>
+            <span class="count">3</span>
+        </div>
+        <div class="cat-item" onclick="filterCategory('Medical')">
+            <span class="name">Medical</span>
+            <span class="count">3</span>
+        </div>
+        <div class="cat-item" onclick="filterCategory('Creative')">
+            <span class="name">Creative</span>
+            <span class="count">2</span>
+        </div>
+        <div class="cat-item" onclick="filterCategory('VA/Benefits')">
+            <span class="name">VA/Benefits</span>
+            <span class="count">2</span>
+        </div>
+        <div class="cat-item" onclick="filterCategory('Space/Orbital')">
+            <span class="name">Space/Orbital</span>
+            <span class="count">1</span>
+        </div>
+
+        <h3 style="margin-top: 24px">Key Notebooks</h3>
+        <div class="cat-item" onclick="scrollToNotebook('Medical Summary for Vincent Barnard')">
+            <span class="name"><span class="hot-badge">HOT</span> Vincent Medical</span>
+        </div>
+        <div class="cat-item" onclick="scrollToNotebook('OutPace Doctrine')">
+            <span class="name">🎹 Rick's Doctrine</span>
+        </div>
+        <div class="cat-item" onclick="scrollToNotebook('Digital Twin')">
+            <span class="name">Digital Twin Blueprint</span>
+        </div>
+        <div class="cat-item" onclick="scrollToNotebook('VA Disability')">
+            <span class="name">VA Disability/CUE</span>
+        </div>
+        <div class="cat-item" onclick="scrollToNotebook('Karen Fekete')">
+            <span class="name"><span class="sensitive-badge">SENS</span> Karen Medical</span>
+        </div>
+    </div>
+    <div class="content" id="content">
+        <div class="tabs">
+            <div class="tab active" onclick="showView('inventory')">📋 Inventory</div>
+            <div class="tab" onclick="showView('charts')">📊 Charts</div>
+            <div class="tab" onclick="showView('timeline')">📅 Timeline</div>
+            <div class="tab" onclick="showView('people')">👥 People</div>
+            <div class="tab" onclick="showView('domains')">🗺️ Domains</div>
+        </div>
+        
+        <div id="view-inventory">
+            <input class="search" type="text" placeholder="Search notebooks..." oninput="filterSearch(this.value)" id="searchBox">
+            <div id="notebook-list"></div>
+        </div>
+        
+        <div id="view-charts" style="display:none">
+            <div class="chart-container">
+                <h3>Notebooks by Category</h3>
+                <div class="bar-chart" id="cat-chart"></div>
+            </div>
+            <div class="chart-container">
+                <h3>Top 20 Largest Notebooks (KB)</h3>
+                <div class="bar-chart" id="size-chart"></div>
+            </div>
+            <div class="chart-container">
+                <h3>Top 20 Most Sources</h3>
+                <div class="bar-chart" id="source-chart"></div>
+            </div>
+        </div>
+        
+        <div id="view-timeline" style="display:none">
+            <div class="chart-container">
+                <h3>Notebook Creation Timeline</h3>
+                <div class="timeline" id="timeline"></div>
+            </div>
+        </div>
+        
+        <div id="view-people" style="display:none">
+            <div class="chart-container">
+                <h3>Key People Network</h3>
+                <div id="people-network"></div>
+            </div>
+        </div>
+        
+        <div id="view-domains" style="display:none">
+            <div class="chart-container">
+                <h3>Knowledge Domain Coverage</h3>
+                <div id="domain-map"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const notebooks = [
+  {
+    "name": "0 GLOC_ DLA DATA  NEXT",
+    "emoji": "\ud83c\udfdb\ufe0f",
+    "category": "NSN/Manufacturing",
+    "created": "2026-02-27",
+    "lastViewed": "2026-03-01",
+    "createdFull": "2026-02-27T17:19:03.671655Z",
+    "sources": 22,
+    "artifacts": 0,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 54,
+    "sizeKB": 668.5,
+    "shared": false,
+    "sourceNames": [
+      "Decision_Trace_KimiK2.txt",
+      "00_User_Dev_Doc",
+      "GPT-5.3 Codex Prompting Deep Dive.md",
+      "EXTERNAL_SOURCES.md",
+      "Decision_Trace_GitHubCopilot.txt",
+      "SDD_TREE.md",
+      "Database_Schema_Routing_MSCopilot.md",
+      "Decision_Trace_GlobalGPT.txt",
+      "sdd-templates.md",
+      "Provenance_Qwen.txt",
+      "constitution.md",
+      "CLAUDE.md",
+      "LLM_RAG_ Integrate_MSCopilot.txt",
+      "Database_Schema_Routing_GlobalGPT.md",
+      "plan.md",
+      "26-02-27_UKB_Claude_Code_2.md",
+      "LLM_RAG_ Integrate_KimiK2.txt",
+      "Database_Schema_Routing_KimiK2.md",
+      "DOMO.MD",
+      "data-model.md",
+      "CATALOG_TOOLS_TABLES_INFO_SCHEMA.txt",
+      "LLM_RAG_ Integrate_GlobalGPT.txt"
+    ]
+  },
+  {
+    "name": "1-Distill-NSN-Mnfg",
+    "emoji": "\ud83d\udce6",
+    "category": "NSN/Manufacturing",
+    "created": "2026-01-19",
+    "lastViewed": "2026-03-02",
+    "createdFull": "2026-01-19T18:52:46.166856Z",
+    "sources": 35,
+    "artifacts": 0,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 84,
+    "sizeKB": 681.5,
+    "shared": false,
+    "sourceNames": [
+      "ID_NSNs_to_Platforms.md",
+      "NSN_PATTERN_GROK_2.txt",
+      "# SAPAC NSN SYSTEM.txt",
+      "PERPLEXITY_LINKS_NSNs.txt",
+      "BidLink_Gravitation.txt",
+      "ID_Non-SAR_NSNs.txt",
+      "# SPREADSHEET ROW CATEGORIES.txt",
+      "NSN_Assignment_Linking.md",
+      "Forging_NSNs_Workflow.md",
+      "NSN_SYS_LIST_IDEAS.txt",
+      "NSN_PATTERN_GROK_1.txt",
+      "# MRD EXPLAINATION.txt",
+      "# PLATFORM EXTRACTION LOGIC.txt",
+      "MOE_Rules_Explained.md",
+      "THE-PLAY.md",
+      "# DATABASE CREATION.txt",
+      "NSN_PATTERN_2.txt",
+      "# MRC MANUFACTURING TYPES.txt",
+      "FLIS_SEGMENTATION_SSOT.md",
+      "GROK_LINKS_NSNS.txt",
+      "FedMall_Sales_Data_MRD.txt",
+      "DLA_NSN_PILOT.md",
+      "SASPO_QPL_QML.txt",
+      "User_Chat_Doc.md",
+      "NSN Breakout.txt",
+      "segment NSNs.txt",
+      "Database_Intel-1.txt",
+      "# DETERMINE FORGING.txt",
+      "Database_Intel-2.txt",
+      "Tracing_Aviation_PNs-NSNs.md",
+      "NSN-data-meanings-Example.pdf",
+      "DLA_ZIP_FILE_HEADERS.md",
+      "RSC Codes Defined.docx.md",
+      "Get_QPL_MIL_SPEC.txt",
+      "# DRAWING AVAILABILITY.txt"
+    ]
+  },
+  {
+    "name": "1.5 Deduplicator",
+    "emoji": "\ud83c\udfe0",
+    "category": "Other",
+    "created": "2026-01-24",
+    "lastViewed": "2026-02-28",
+    "createdFull": "2026-01-24T19:45:26.369335Z",
+    "sources": 1,
+    "artifacts": 0,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 4,
+    "sizeKB": 497.3,
+    "shared": false,
+    "sourceNames": [
+      "JOe-AI-Demo-Doc.txt"
+    ]
+  },
+  {
+    "name": "10-Distill-NSN-Mnfg",
+    "emoji": "\ud83d\udcac",
+    "category": "NSN/Manufacturing",
+    "created": "2026-01-19",
+    "lastViewed": "2026-01-19",
+    "createdFull": "2026-01-19T16:00:04.441867Z",
+    "sources": 8,
+    "artifacts": 0,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 30,
+    "sizeKB": 1064.0,
+    "shared": false,
+    "sourceNames": [
+      "Database_Intel-Gap_Ananlysis.txt",
+      "Database-Best-Practices-1.md",
+      "User_Chat_Doc.md",
+      "Database_Research_Prompts-1.txt",
+      "Database_Research_Prompts-2.txt",
+      "Database-Best-Practices-Tools.md",
+      "Database-Best-Practices-2.md",
+      "Do another search..md"
+    ]
+  },
+  {
+    "name": "11-Distill-NSN-Mnfg",
+    "emoji": "\ud83c\udf10",
+    "category": "NSN/Manufacturing",
+    "created": "2026-01-19",
+    "lastViewed": "2026-01-20",
+    "createdFull": "2026-01-19T23:56:25.334261Z",
+    "sources": 15,
+    "artifacts": 0,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 69,
+    "sizeKB": 55663.8,
+    "shared": false,
+    "sourceNames": [
+      "Multi-Platform-Graphics.pdf",
+      "LOGFAC_SOURCES.md",
+      "LOGFAC_WRM_REVIEW_FINAL.md",
+      "sar_aviation_spares.pdf",
+      "LOGFAC_WRM_OPUS.md",
+      "LOGFAC_WRM_SONNET.md",
+      "AM SAR Brochure_APR2025_REV1.pdf",
+      "User_Chat_Doc.md",
+      "THE-PLAY.md",
+      "NBLM-PLAUD-Mindmaps-Screenshots.pdf",
+      "LOGFAC_WRM_TASKER.md",
+      "LogFAC-WRM-Strategic-Review.pdf",
+      "GOVPURCHASE_YOUTUBE_URLs.md",
+      "logfac_trajectory.md",
+      "CSL_SAR_AMC_CODES_2C_1C.pdf"
+    ]
+  },
+  {
+    "name": "12 Cell Matrix",
+    "emoji": "\ud83e\ude79",
+    "category": "Other",
+    "created": "2026-02-21",
+    "lastViewed": "2026-02-22",
+    "createdFull": "2026-02-21T17:42:36.555542Z",
+    "sources": 30,
+    "artifacts": 0,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 78,
+    "sizeKB": 17511.1,
+    "shared": false,
+    "sourceNames": [
+      "EZ-SB-13-001-RevA.pdf",
+      "ASME-Y14-46-2017.txt",
+      "additive_mfg.pdf",
+      "CM-S-008_Chunk_4.md",
+      "MIL-STD-31000.txt",
+      "642854202-ASTM-B-243.txt",
+      "ML23324A253.pdf",
+      "CM-S-008_Chunk_2.md",
+      "RCUF_12-Cell_Matrix_Standalone.md",
+      "MMPDS-01_CY-2003_chunk008.txt",
+      "ILS-Government-Research_Tool_Index.md",
+      "862926048-ASTM-F3049-14-2021.txt",
+      "CM-S-008_Chunk_3.md",
+      "711730944-ASTM-ISO-52907-2020.txt",
+      "MMPDS_ADOPTION_NOTICE.pdf",
+      "26-02-22_NSN_Meta_Data_Cusor_1.txt",
+      "MMPDS-01_CY-2003_chunk009.txt",
+      "FAA_Order_8110.101A.pdf",
+      "MIL-STD-882E.pdf",
+      "D20 Committee Briefing.pdf",
+      "END DI-SESS-82465.txt",
+      "OutPaceJ4WhitePaper.docx",
+      "FAA_EASA_TSO_Applications.txt",
+      "MMPDS-01_CY-2003_chunk007.txt",
+      "OutPaceJ4QuadChart.pdf",
+      "ATSM_F3572-22.pdf",
+      "AWS_D20_1_D20_1M_2019-PV.pdf",
+      "001-NBLM_USER_CHAT_DOC.md",
+      "CM-S-008_Chunk_1.md",
+      "END TOPIC 4 Rapid Certification.txt"
+    ]
+  },
+  {
+    "name": "12-Distill-NSN-Mnfg",
+    "emoji": "\ud83c\udfd7\ufe0f",
+    "category": "NSN/Manufacturing",
+    "created": "2026-01-20",
+    "lastViewed": "2026-01-20",
+    "createdFull": "2026-01-20T00:08:45.267399Z",
+    "sources": 6,
+    "artifacts": 0,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 39,
+    "sizeKB": 9692.2,
+    "shared": false,
+    "sourceNames": [
+      "User_Chat_Doc.md",
+      "AV_dod_4161.2-m_151015.pdf",
+      "SIGNED MRO PLAYBOOK (2 AUG 2024).pdf",
+      "AV_FSCClassAssignment._151007.pdf",
+      "THE-PLAY.md",
+      "flis508vol10tb_104.pdf"
+    ]
+  },
+  {
+    "name": "2-Distill-NSN-Mnfg",
+    "emoji": "\ud83c\udfaf",
+    "category": "NSN/Manufacturing",
+    "created": "2026-01-18",
+    "lastViewed": "2026-01-19",
+    "createdFull": "2026-01-18T20:51:38.727067Z",
+    "sources": 5,
+    "artifacts": 0,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 54,
+    "sizeKB": 2500.3,
+    "shared": false,
+    "sourceNames": [
+      "User Guide - Data.gov.pdf",
+      "INTEL ASSETS CONFIRMED..txt",
+      "October 2021 PSC Manual.pdf",
+      "COPY..txt",
+      "Data_dot_Gov-Manf-Sets.md"
+    ]
+  },
+  {
+    "name": "3-Distill-NSN-Mnfg",
+    "emoji": "\ud83c\udfaf",
+    "category": "NSN/Manufacturing",
+    "created": "2026-01-19",
+    "lastViewed": "2026-01-19",
+    "createdFull": "2026-01-19T19:26:10.160243Z",
+    "sources": 3,
+    "artifacts": 0,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 78,
+    "sizeKB": 874.3,
+    "shared": false,
+    "sourceNames": [
+      "26-01-19-Index.txt",
+      "TDP-GovPurchase-Intel.txt",
+      "CONTRACT_CANCELLATION_MODS.txt"
+    ]
+  },
+  {
+    "name": "4-Distill-NSN-Mnfg",
+    "emoji": "\ud83d\udcac",
+    "category": "NSN/Manufacturing",
+    "created": "2026-01-18",
+    "lastViewed": "2026-01-19",
+    "createdFull": "2026-01-18T20:30:43.608172Z",
+    "sources": 11,
+    "artifacts": 0,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 43,
+    "sizeKB": 3708.1,
+    "shared": false,
+    "sourceNames": [
+      "3ChatGPT - Shared Content.pdf",
+      "ChatGPT - Shared Content.pdf",
+      "NSN_Repos.md",
+      "2ChatGPT - Shared Content.pdf",
+      "Perplexity_INTEL_GAP_Return.md",
+      "Source Approval Process Insights.pdf",
+      "SIGNED MRO PLAYBOOK (2 AUG 2024).pdf",
+      "Acft_Part_Repos.md",
+      "THE_PLAY.md",
+      "User_Chat_Doc.md",
+      "4ChatGPT - Shared Content.pdf"
+    ]
+  },
+  {
+    "name": "5-Distill-NSN-Mnfg",
+    "emoji": "\ud83d\udcac",
+    "category": "NSN/Manufacturing",
+    "created": "2026-01-18",
+    "lastViewed": "2026-01-19",
+    "createdFull": "2026-01-18T20:30:56.728840Z",
+    "sources": 11,
+    "artifacts": 0,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 51,
+    "sizeKB": 4910.6,
+    "shared": false,
+    "sourceNames": [
+      "DLA_White_Paper_Top_2_Sources.md",
+      "CONTEXT_GRAPHS_EVENT_AUDIT_1.md",
+      "Context_Graph_Repos-cleaned.md",
+      "SYM-AM-14-119.pdf",
+      "SYM-AM-14-056.pdf",
+      "top_2_sources_analysis.md",
+      "CONTEXT_GRAPH_BOLT_ON.md",
+      "Context_Graph_Repos.md",
+      "CONTEXT_NSN_DECODING_GPT.txt",
+      "User_Chat_Doc.md",
+      "Context_Graphs_Are_Exploding.md"
+    ]
+  },
+  {
+    "name": "6-Distill-NSN-Mnfg",
+    "emoji": "\ud83c\udfaf",
+    "category": "NSN/Manufacturing",
+    "created": "2026-01-18",
+    "lastViewed": "2026-01-19",
+    "createdFull": "2026-01-18T22:02:14.934616Z",
+    "sources": 1,
+    "artifacts": 0,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 5,
+    "sizeKB": 201.3,
+    "shared": false,
+    "sourceNames": [
+      "Legacy_Claude_Thread-5.txt"
+    ]
+  },
+  {
+    "name": "7-Distill-NSN-Mnfg",
+    "emoji": "\ud83c\udfaf",
+    "category": "NSN/Manufacturing",
+    "created": "2026-01-18",
+    "lastViewed": "2026-01-19",
+    "createdFull": "2026-01-18T22:02:49.323754Z",
+    "sources": 4,
+    "artifacts": 1,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 25,
+    "sizeKB": 71974.4,
+    "shared": false,
+    "sourceNames": [
+      "Perplexity_INTEL_GAP_Return.md",
+      "# THE TRUE HOLY GRAIL NSN PREDIC.txt",
+      "NSN_Repos.md",
+      "Acft_Part_Repos.md"
+    ]
+  },
+  {
+    "name": "8-Distill-NSN-Mnfg",
+    "emoji": "\ud83d\udccb",
+    "category": "NSN/Manufacturing",
+    "created": "2026-01-18",
+    "lastViewed": "2026-01-19",
+    "createdFull": "2026-01-18T21:45:48.333878Z",
+    "sources": 1,
+    "artifacts": 0,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 7,
+    "sizeKB": 65232.5,
+    "shared": false,
+    "sourceNames": [
+      "RSC Codes Defined.docx.md"
+    ]
+  },
+  {
+    "name": "9-Distill-NSN-Mnfg",
+    "emoji": "\ud83c\udfaf",
+    "category": "NSN/Manufacturing",
+    "created": "2026-01-18",
+    "lastViewed": "2026-01-19",
+    "createdFull": "2026-01-18T22:01:09.109705Z",
+    "sources": 1,
+    "artifacts": 0,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 5,
+    "sizeKB": 410.6,
+    "shared": false,
+    "sourceNames": [
+      "26-01-16-NBLM-Distillation-1.txt"
+    ]
+  },
+  {
+    "name": "AFGSC Commercial Capabilities Showcase 2026 White ",
+    "emoji": "",
+    "category": "Defense",
+    "created": "Unknown",
+    "lastViewed": "Unknown",
+    "createdFull": "",
+    "sources": 27,
+    "artifacts": 0,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 75,
+    "sizeKB": 21041.8,
+    "shared": false,
+    "sourceNames": [
+      "DATASET_SCREENSHOTS_2.pdf",
+      "CODE_SCREENSHOTS_2.pdf",
+      "AFIT_GRP_SCREENSHOT.png",
+      "OPS_BG_REMOVED_HEAVY_BRUSH.png",
+      "Rob_Human-AI_Case_Study.md",
+      "DATASET_SCREENSHOTS_3.pdf",
+      "Mark_Johnson_Profile.md",
+      "Suzanne_Tkach_Profile.md",
+      "Screenshot 2026-02-14 100633.png",
+      "CODE_SCREENSHOTS_3.pdf",
+      "J4_Solutions_Group_Profile.MD",
+      "AFGSCCCIT-v1-0.pdf",
+      "Slide8-fotor-20260214115246.png",
+      "OutPaceJ4WhitePaper.docx",
+      "HamiCo_Profile.md",
+      "AFIT_GRP_SCREENSHOT2.png",
+      "DATASET_SCREENSHOTS_1.pdf",
+      "Slide8-fotor-20260214114619.png",
+      "AFGSC Shield_no background SMALL.png",
+      "BUILD_SPEC_v6.0.1_PATCHED.md",
+      "OPS-J4SG_Logo.png",
+      "Rob_Fekete_Profile.md",
+      "Tkach_Consulting_Profile.md",
+      "USAF_WORDS_ON_NEW_FRAMEWORK.txt",
+      "DEMO_SCREENSHOTS_1.pdf",
+      "Screenshot 2026-02-14 100851.png",
+      "CODE_SCREENSHOTS_1.pdf"
+    ]
+  },
+  {
+    "name": "AFGSC-OTA-and-SHOWCASE",
+    "emoji": "\ud83c\udfd7\ufe0f",
+    "category": "Defense",
+    "created": "2026-02-08",
+    "lastViewed": "2026-02-09",
+    "createdFull": "2026-02-08T20:45:07.054352Z",
+    "sources": 27,
+    "artifacts": 5,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 194,
+    "sizeKB": 461579.0,
+    "shared": false,
+    "sourceNames": [
+      "26-02-07-AFGSC-DB-Build-1.txt",
+      "26-02-07-AFGSC-DB-Build-2.txt",
+      "EN-FSB-25-01 Document Analysis.md",
+      "SAM.gov-AFGSC-OTA-Screenshot-Y.md",
+      "ASC_Associates_Profile-Y.md",
+      "Rob_Human-AI_Case_Study-Y.md",
+      "OTA_Solicitation_CCITShowcase-Y.md",
+      "26-02-08-AFGSC-OTA-Thread-Dev-0.txt",
+      "Mark_Johnson_Profile-Y.md",
+      "Joe_Chinnici_Profile-Y.md",
+      "01-NBLM_PODCAST_CHAT.md",
+      "26-02-08-AFGSC-OTA-Thread-Dev-2.txt",
+      "Connie_Davis_Combined_Profile-Y.md",
+      "26-02-07-AFGSC-DB-Build-3.txt",
+      "01-NBLM_USER_CHAT_DOC.md",
+      "Rob_AFIT_GRP_Chunk_1-Y.md",
+      "HamiCo_Profile-Y.md",
+      "DODIG-2024-029_B52_DMSMS_Audit-Y.md",
+      "Glenn_Daehn_Profile-Y.md",
+      "Shashi_Jina_Profile-Y.md",
+      "Suzanne_Tkach_Profile-Y.md",
+      "Application_Process-Y.md",
+      "26-02-08-AFGSC-DB-Build-1.txt",
+      "Arch_City_Studio_Profile-Y.md",
+      "J4_Solutions_Group_Profile-Y.md",
+      "AMJ_Consulting_LLC_Profile-Y.md",
+      "Rob_Fekete_Profile-Y.md"
+    ]
+  },
+  {
+    "name": "AGENT-Aggregated-Distill-Sources",
+    "emoji": "\ud83c\udfaf",
+    "category": "NSN/Manufacturing",
+    "created": "2026-01-20",
+    "lastViewed": "2026-01-20",
+    "createdFull": "2026-01-20T00:18:26.041398Z",
+    "sources": 2,
+    "artifacts": 4,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 95,
+    "sizeKB": 650727.9,
+    "shared": false,
+    "sourceNames": [
+      "User_Chat_Doc.md",
+      "THE-PLAY.md"
+    ]
+  },
+  {
+    "name": "AGENT-Aviation-Surplus-Market-NSN-Mnfg",
+    "emoji": "",
+    "category": "NSN/Manufacturing",
+    "created": "Unknown",
+    "lastViewed": "Unknown",
+    "createdFull": "",
+    "sources": 16,
+    "artifacts": 0,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 194,
+    "sizeKB": 6872.6,
+    "shared": false,
+    "sourceNames": [
+      "Accessories & Systems MRO | AerSale",
+      "Active disassembly | AAR CORP.",
+      "DLA Disposition Services",
+      "Locating Legacy Aircraft Parts.pdf",
+      "Military Aircraft Parts - DIMO Corp.",
+      "Spares_loc.txt",
+      "User_Chat_Doc.md",
+      "spares_rag_chunk-2.md",
+      "SOS_SPARES_MARKET_SOURCES_1.txt",
+      "spares_rag_chunk-1.md",
+      "THE_PLAY.md",
+      "SOS_SPARES_MARKET_SOURCES_2.txt",
+      "Open Source Aircraft Parts Data.md",
+      "SOS_SPARES_MARKET_SOURCES_3.txt",
+      "Avionics FAQs - Southeast Aerospace",
+      "Static Display Aircraft Search.pdf"
+    ]
+  },
+  {
+    "name": "AGENT-BGov-NSN-Mnfg",
+    "emoji": "\ud83d\udcca",
+    "category": "NSN/Manufacturing",
+    "created": "2026-01-18",
+    "lastViewed": "2026-01-19",
+    "createdFull": "2026-01-18T19:52:02.931186Z",
+    "sources": 5,
+    "artifacts": 1,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 17,
+    "sizeKB": 90656.5,
+    "shared": false,
+    "sourceNames": [
+      "BGov-Combined-Binder.pdf",
+      "BGov-Tutorial-Binder.pdf",
+      "THE_PLAY.md",
+      "User_Chat_Doc.md",
+      "BGov-Screenshot-Binder.pdf"
+    ]
+  },
+  {
+    "name": "AGENT-GovPurchase-NSN-Mnfg",
+    "emoji": "\ud83d\udccb",
+    "category": "NSN/Manufacturing",
+    "created": "2026-01-18",
+    "lastViewed": "2026-01-19",
+    "createdFull": "2026-01-18T19:56:30.082189Z",
+    "sources": 3,
+    "artifacts": 0,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 17,
+    "sizeKB": 190740.4,
+    "shared": false,
+    "sourceNames": [
+      "User_Chat_Doc.md",
+      "THE_PLAY.md",
+      "GovPurchase_Binder.pdf"
+    ]
+  },
+  {
+    "name": "AGENT-GovWinIQ-NSN-Mnfg",
+    "emoji": "\ud83d\udcc8",
+    "category": "NSN/Manufacturing",
+    "created": "2026-01-19",
+    "lastViewed": "2026-01-19",
+    "createdFull": "2026-01-19T20:19:49.293140Z",
+    "sources": 4,
+    "artifacts": 0,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 12,
+    "sizeKB": 157702.8,
+    "shared": false,
+    "sourceNames": [
+      "GovWinIQ-Binder2.pdf",
+      "User_Chat_Doc.md",
+      "GovWinIQ-Binder1.pdf",
+      "THE-PLAY.md"
+    ]
+  },
+  {
+    "name": "AGENT-HigherGov-NSN-Mnfg",
+    "emoji": "\ud83d\udd0c",
+    "category": "NSN/Manufacturing",
+    "created": "2026-01-18",
+    "lastViewed": "2026-01-19",
+    "createdFull": "2026-01-18T20:02:31.286925Z",
+    "sources": 5,
+    "artifacts": 0,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 19,
+    "sizeKB": 145982.3,
+    "shared": false,
+    "sourceNames": [
+      "User_Chat_Doc.md",
+      "HG_SAVED_SEARCH_SCREEN_SHOTS.pdf",
+      "HigherGov-GitBook-Docs.pdf",
+      "THE_PLAY.md",
+      "highergov_api_docs_complete.pdf"
+    ]
+  },
+  {
+    "name": "AGENT-Industrial-Equip-Manuals-NSN-Mnfg",
+    "emoji": "",
+    "category": "NSN/Manufacturing",
+    "created": "Unknown",
+    "lastViewed": "Unknown",
+    "createdFull": "",
+    "sources": 2,
+    "artifacts": 0,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 23,
+    "sizeKB": 86997.4,
+    "shared": false,
+    "sourceNames": [
+      "Lathes + Machine Tool Archive.pdf",
+      "Machinery Support Repair Parts.pdf"
+    ]
+  },
+  {
+    "name": "AI Proficiency Stratification and Usage Analysis 2",
+    "emoji": "",
+    "category": "AI/ML",
+    "created": "Unknown",
+    "lastViewed": "Unknown",
+    "createdFull": "",
+    "sources": 31,
+    "artifacts": 2,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 106,
+    "sizeKB": 89770.2,
+    "shared": false,
+    "sourceNames": [
+      "Fekete_Rank_Service_Dates.md",
+      "J4-Solutions-Group-BMG-GTM.pdf",
+      "Fekete_OPRs_2015-2021.md",
+      "Fekete_OPBs_2023-2024.md",
+      "SOS Triage Assessor v4.4.txt",
+      "OSD_RSF_ROB_ANSWER.docx",
+      "Fekete_OPRs_2006-2011.md",
+      "Your_Year_with_ChatGPT_Screenshots.md",
+      "Fekete_BSM_Documentation.md",
+      "Prompt-NBLM-Media-About-Rob.txt",
+      "Rob_year_with_GPT.pdf",
+      "Fekete_DD214_Officer_Retirement.md",
+      "Fekete_Training_Complete.md",
+      "Fekete_Retirement_Separation_Data.md",
+      "Fekete_Master_Documentation_Index.md",
+      "Fekete_TDY_Deployment_History.md",
+      "Fekete_Complete_Awards_Rack.md",
+      "OutPace Response OK MILCON.docx",
+      "Fekete_Performance_Report_History.md",
+      "prompt_eng_trend.png",
+      "frontier_gap.png",
+      "Fekete_Decorations_Awards.md",
+      "Perplexity_AI_Benchmark_images.pdf",
+      "Fekete_DD214_Enlisted_Complete.md",
+      "Fekete_OPRs_2011-2016.md",
+      "Fitment_Audit.txt",
+      "Fekete_VA_Disability_Benefits.md",
+      "prompt_eng_salary.png",
+      "Fekete_Professional_Certifications.md",
+      "Fekete_EPRs_2000-2005.md",
+      "ai_user_pyramid.png"
+    ]
+  },
+  {
+    "name": "Air Force Record of Individual Counseling and Resp",
+    "emoji": "",
+    "category": "Other",
+    "created": "Unknown",
+    "lastViewed": "Unknown",
+    "createdFull": "",
+    "sources": 40,
+    "artifacts": 1,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 128,
+    "sizeKB": 269377.9,
+    "shared": false,
+    "sourceNames": [
+      "1st Lt Meakin_MFR.pdf",
+      "TSgt Vargo MFR.pdf",
+      "Order to Return - TSgt Vargo.pdf",
+      "Rob_Telling_GPT_Vargo_Story.md",
+      "TSgt Vargo Accountability MFR.pdf",
+      "DDR Sweep First Contact.pdf",
+      "MFR for TSgt Vargo Cory_PCM(003).pdf",
+      "Vargo Statements x5 ea.pdf",
+      "Locklear, Vanessa MFR.pdf",
+      "LOR_UIF document 6 Feb 23.pdf",
+      "SrA Bailey_TSgt Vargo MFR.pdf",
+      "Vargo FB Post.pdf",
+      "LRS CC MFR Vargo Notes.pdf",
+      "Vargo texts 2.jpg",
+      "M Flight MFRs.pdf",
+      "NJP Response.docx",
+      "Text Message from MSgt James.jpg",
+      "MFR - TSgt Vargo.pdf",
+      "Vargo texts 1.jpg",
+      "TSgt Vargo - Barment (13 Jan 23).pdf",
+      "Vargo MFR (Tardiness).pdf",
+      "TSgt Vargo MFR  7 Apr 23.pdf",
+      "Vargo Call first half-transcript.txt",
+      "Security Incident Report_Vargo.pdf",
+      "VArgo Seperation Request.pdf",
+      "SrA McCants_MFR.pdf",
+      "TSgt Vargo MFR  13 Mar 23.pdf",
+      "Text Message from MSgt James.pdf",
+      "Vargo CC LOR_13 Dec 22.pdf",
+      "CCF driven af174 RESPONSE.pdf",
+      "Vargo texts 3.jpg",
+      "Vargo Call second half-transcript.txt",
+      "MFR_TSG Vargo.pdf",
+      "20221213 Priv Comm Release, Vargo.pdf",
+      "Commanders and CDE Request VARGO.pdf",
+      "Order - TSgt Vargo.pdf",
+      "SrA Taylor_Vargo MFR.pdf",
+      "TSgt Vargo MFR  15 Mar 23.pdf",
+      "RE_ DDR numbers for 4 LRS_LGRM.pdf",
+      "TSgt Vargo LOR.docx"
+    ]
+  },
+  {
+    "name": "B-52J Commercial Engine Replacement Program Analys",
+    "emoji": "",
+    "category": "Other",
+    "created": "Unknown",
+    "lastViewed": "Unknown",
+    "createdFull": "",
+    "sources": 1,
+    "artifacts": 1,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 7,
+    "sizeKB": 41632.4,
+    "shared": false,
+    "sourceNames": [
+      "01-NBLM_USER_CHAT_DOC.md"
+    ]
+  },
+  {
+    "name": "B2B Dashboards SSOT",
+    "emoji": "\ud83d\udee1\ufe0f",
+    "category": "Business Dev",
+    "created": "2026-01-12",
+    "lastViewed": "2026-01-26",
+    "createdFull": "2026-01-12T13:47:13.474418Z",
+    "sources": 26,
+    "artifacts": 0,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 56,
+    "sizeKB": 2309.5,
+    "shared": false,
+    "sourceNames": [
+      "2016-10-12_Claude_Code.md",
+      "04-FAILURE_PATTERNS_1.md",
+      "Interactive Feature Verification.md",
+      "Temp-Claude-5.txt",
+      "26-01-26-B2B-Dashboard-3.txt",
+      "05-COMREL.md",
+      "01-NBLM_USER_CHAT_DOC.md",
+      "Temp-Claude-3.txt",
+      "26-01-26-B2B-Dashboard-2.txt",
+      "Temp-Claude-4.txt",
+      "02-USER.md",
+      "Temp-QC-Agent-2.txt",
+      "26-01-26-B2B-Dashboard-1.txt",
+      "2016-10-12_Claude_Code-3.txt",
+      "Temp-Claude-1.txt",
+      "26-01-24-B2B-Dashboard-1.txt",
+      "26-01-25-Gemini-UI-Fix-Fail.md",
+      "Temp-QC-Agent-1.txt",
+      "26-01-14_Claude_Code_CLI_1.txt",
+      "03-CONCERNS_DOCTRINE.md",
+      "2016-10-12_Claude_Code-2.txt",
+      "26-01-24-B2B-Dashboard-2.txt",
+      "26-01-24-B2B-Dashboard-4.txt",
+      "26-01-14_Claude_Code_1.txt",
+      "26-01-24-B2B-Dashboard-5.txt",
+      "Temp-Claude-2.txt"
+    ]
+  },
+  {
+    "name": "B2B Sync Regression Guards and Adversarial Verific",
+    "emoji": "",
+    "category": "Business Dev",
+    "created": "Unknown",
+    "lastViewed": "Unknown",
+    "createdFull": "",
+    "sources": 11,
+    "artifacts": 0,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 58,
+    "sizeKB": 5980.4,
+    "shared": false,
+    "sourceNames": [
+      "GPT-Project-2.txt",
+      "GPT-Strat-Advisor-4.txt",
+      "GPT-Lessons-Learned-Capture.txt",
+      "GPT-Strat-Advisor-3.txt",
+      "GPT-Project-3-4.txt",
+      "GPT-Project-1.txt",
+      "How-to-Prompt-Taskade.md",
+      "GPT-Strat-Advisor-1.txt",
+      "GPT-Strat-Advisor-2.txt",
+      "thread_ai_20251217_0349Z.md",
+      "thread_ai_20251218_2100Z-2.md"
+    ]
+  },
+  {
+    "name": "BURNER_ G-Drive SSOT Organization",
+    "emoji": "\ud83c\udfd7\ufe0f",
+    "category": "Other",
+    "created": "2026-03-22",
+    "lastViewed": "2026-03-23",
+    "createdFull": "2026-03-22T21:20:03.864218Z",
+    "sources": 6,
+    "artifacts": 0,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 14,
+    "sizeKB": 119.5,
+    "shared": false,
+    "sourceNames": [
+      "BLUEPRINT.md",
+      "router.md",
+      "authorizations_prohibited.md",
+      "PHYSICAL_ARCHITECTURE.md",
+      "qc_config.md",
+      "baseline_context.md"
+    ]
+  },
+  {
+    "name": "BURNER_ACFT_TEARDOWN",
+    "emoji": "\u2708\ufe0f",
+    "category": "Other",
+    "created": "2026-03-25",
+    "lastViewed": "2026-03-25",
+    "createdFull": "2026-03-25T01:23:06.732162Z",
+    "sources": 1,
+    "artifacts": 0,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 3,
+    "sizeKB": 40.7,
+    "shared": false,
+    "sourceNames": [
+      "_upload_temp.txt"
+    ]
+  },
+  {
+    "name": "Bidlink",
+    "emoji": "\u2753",
+    "category": "Other",
+    "created": "2026-03-20",
+    "lastViewed": "2026-03-21",
+    "createdFull": "2026-03-20T16:20:40.891530Z",
+    "sources": 2,
+    "artifacts": 0,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 8,
+    "sizeKB": 5261.9,
+    "shared": false,
+    "sourceNames": [
+      "BidLink_Config_Research.md",
+      "Bidlink_Binder.pdf"
+    ]
+  },
+  {
+    "name": "CI-Agent-9 IC Confidence Standards",
+    "emoji": "\u2696\ufe0f",
+    "category": "NSN/Manufacturing",
+    "created": "2026-01-27",
+    "lastViewed": "2026-01-27",
+    "createdFull": "2026-01-27T13:05:35.747962Z",
+    "sources": 1,
+    "artifacts": 0,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 3,
+    "sizeKB": 14.2,
+    "shared": false,
+    "sourceNames": [
+      "01_CI-IC-Standards-Reference.md"
+    ]
+  },
+  {
+    "name": "Canadian Defense Pathways to U.S. and Allied Marke",
+    "emoji": "",
+    "category": "Defense",
+    "created": "Unknown",
+    "lastViewed": "Unknown",
+    "createdFull": "",
+    "sources": 0,
+    "artifacts": 0,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 4,
+    "sizeKB": 28.9,
+    "shared": false,
+    "sourceNames": []
+  },
+  {
+    "name": "Claude Code and NotebookLM_ Knowledge Extraction W",
+    "emoji": "",
+    "category": "AI/ML",
+    "created": "Unknown",
+    "lastViewed": "Unknown",
+    "createdFull": "",
+    "sources": 11,
+    "artifacts": 0,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 29,
+    "sizeKB": 516.3,
+    "shared": false,
+    "sourceNames": [
+      "Datamine LLM Threads.md",
+      "Multi-Agent Extraction Pipeline.md",
+      "NotebookLM MCP.txt",
+      "Claude Code makes 1 MCP call.txt",
+      "NotebookLM MCP Coding Workflows.md",
+      "Trace Architecture.md",
+      "Claude Code Skill Use NotebookLM.txt",
+      "Claude Code Point and Shoot.md",
+      "Claude Code NotebookLM Workflow.md",
+      "1771372311603.jpg",
+      "AI Agents with MCP.txt"
+    ]
+  },
+  {
+    "name": "Claude Prompt Engineering and Agent SDK Guide",
+    "emoji": "",
+    "category": "AI/ML",
+    "created": "Unknown",
+    "lastViewed": "Unknown",
+    "createdFull": "",
+    "sources": 20,
+    "artifacts": 0,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 67,
+    "sizeKB": 448.8,
+    "shared": false,
+    "sourceNames": [
+      "# Long context prompting tips.txt",
+      "# Extended thinking tips.txt",
+      "# CLI reference.txt",
+      "# Modifying system prompts.txt",
+      "# Optimize your terminal setup.txt",
+      "# Visual Studio Code.txt",
+      "# Streaming Input.txt",
+      "Model configuration.txt",
+      "# Slash commands.txt",
+      "# Model configuration.txt",
+      "Guide_Prompt_Claude_Web.md",
+      "# Claude Code settings.txt",
+      "# Status line configuration.txt",
+      "# Handling Permissions.txt",
+      "# Interactive mode.txt",
+      "User-AC3I-Prompt-Requirements.txt",
+      "# Manage Claude's memory.txt",
+      "# Prompt engineering overview.txt",
+      "# Todo Lists.txt",
+      "# Checkpointing.txt"
+    ]
+  },
+  {
+    "name": "Consensus_ Multi-Model AI Pipelines",
+    "emoji": "\u26d3\ufe0f",
+    "category": "Business Dev",
+    "created": "2026-02-27",
+    "lastViewed": "2026-03-01",
+    "createdFull": "2026-02-27T18:51:17.366116Z",
+    "sources": 13,
+    "artifacts": 0,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 31,
+    "sizeKB": 125.4,
+    "shared": false,
+    "sourceNames": [
+      "Perplexity2_Workflow_Review_5.md",
+      "Model_Council_Functions.md",
+      "Perplexity2_Workflow_Review_1.md",
+      "ConsensusManusSciSpaceYou.md",
+      "Perplexity2_Workflow_Review_3.md",
+      "Perplexity2_Workflow_Review_2.md",
+      "Best_Model_For_Tasks.md",
+      "Consensus_All_Model.md",
+      "ConsensusChatGPTClaudeGeminiGrok.md",
+      "ConsensusPerplexityQwenSciSpace.md",
+      "Perplexity2_Workflow_Review_4.md",
+      "ConsensusChatGPTClaudeDeepSeek.md",
+      "ConsensusDeepSeekKimiK2Mistral.md"
+    ]
+  },
+  {
+    "name": "Consolidated Appropriations Act 2026",
+    "emoji": "\ud83d\udcdc",
+    "category": "Other",
+    "created": "2026-01-20",
+    "lastViewed": "2026-01-20",
+    "createdFull": "2026-01-20T19:16:00.310812Z",
+    "sources": 4,
+    "artifacts": 0,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 9,
+    "sizeKB": 1300.0,
+    "shared": false,
+    "sourceNames": [
+      "Bill_Chunk_4_of_4.pdf",
+      "Bill_Chunk_2_of_4.pdf",
+      "Bill_Chunk_3_of_4.pdf",
+      "Bill_Chunk_1_of_4.pdf"
+    ]
+  },
+  {
+    "name": "Convo Splitter & Repair",
+    "emoji": "\ud83e\udd1d",
+    "category": "Other",
+    "created": "2026-03-18",
+    "lastViewed": "2026-03-20",
+    "createdFull": "2026-03-18T21:33:48.172849Z",
+    "sources": 2,
+    "artifacts": 0,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 12,
+    "sizeKB": 281.9,
+    "shared": false,
+    "sourceNames": [
+      "Split-MQ-SOS(05-21-25)-transcript.txt",
+      "MQ-In-Person(08-06-24)-transcript.txt"
+    ]
+  },
+  {
+    "name": "Cornerstone Consortium Management Agreement and In",
+    "emoji": "",
+    "category": "Other",
+    "created": "Unknown",
+    "lastViewed": "Unknown",
+    "createdFull": "",
+    "sources": 1,
+    "artifacts": 0,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 10,
+    "sizeKB": 438.7,
+    "shared": false,
+    "sourceNames": [
+      "01-NBLM_USER_CHAT_DOC.md"
+    ]
+  },
+  {
+    "name": "DLA Sustainment and Reverse Engineering Intelligen",
+    "emoji": "",
+    "category": "Defense",
+    "created": "Unknown",
+    "lastViewed": "Unknown",
+    "createdFull": "",
+    "sources": 6,
+    "artifacts": 0,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 32,
+    "sizeKB": 110755.1,
+    "shared": false,
+    "sourceNames": [
+      "Reverse-Engineering.md",
+      "nsn-reverse-engineering-reality.md",
+      "D200-RBL.md",
+      "DoD Reverse Engineering Ecosystem.md",
+      "When Reverse Engineering Pays Off.md",
+      "AF REACT Lab Operations.md"
+    ]
+  },
+  {
+    "name": "DLA Transportation Process Support and Performance",
+    "emoji": "",
+    "category": "Defense",
+    "created": "Unknown",
+    "lastViewed": "Unknown",
+    "createdFull": "",
+    "sources": 0,
+    "artifacts": 0,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 4,
+    "sizeKB": 178.0,
+    "shared": false,
+    "sourceNames": []
+  },
+  {
+    "name": "DOC STRUCTURING 4_ Assembler",
+    "emoji": "\ud83c\udfe0",
+    "category": "Other",
+    "created": "2026-01-24",
+    "lastViewed": "2026-01-25",
+    "createdFull": "2026-01-24T16:00:09.529867Z",
+    "sources": 2,
+    "artifacts": 0,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 6,
+    "sizeKB": 441.3,
+    "shared": false,
+    "sourceNames": [
+      "Competitive Intel.txt",
+      "01-NBLM_USER_CHAT_DOC.md"
+    ]
+  },
+  {
+    "name": "Development_ NotebookLM Workflows",
+    "emoji": "\ud83d\udcd3",
+    "category": "NotebookLM",
+    "created": "2026-02-10",
+    "lastViewed": "2026-03-14",
+    "createdFull": "2026-02-10T15:52:15.290779Z",
+    "sources": 9,
+    "artifacts": 1,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 35,
+    "sizeKB": 402939.6,
+    "shared": false,
+    "sourceNames": [
+      "NotebookLM MCP Coding Workflows.md",
+      "Claude Code Point and Shoot.md",
+      "01-NBLM_USER_CHAT_DOC.md",
+      "NotebookLMDeveloperUsage_Manus.md",
+      "NotebookLMDeveloperUsage_GPT.md",
+      "Multi-Agent Extraction Pipeline.md",
+      "NotebookLMDeveloperUsage_YouARI.md",
+      "Claude Code makes 1 MCP call.txt",
+      "NotebookLMDeveloperUsage_Gemini.md"
+    ]
+  },
+  {
+    "name": "Digital Twin_ The Rob Cognitive Replication Bluepr",
+    "emoji": "",
+    "category": "Career/Personal",
+    "created": "Unknown",
+    "lastViewed": "Unknown",
+    "createdFull": "",
+    "sources": 1,
+    "artifacts": 0,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 4,
+    "sizeKB": 115.9,
+    "shared": false,
+    "sourceNames": [
+      "Rob-Recreator-App.txt"
+    ]
+  },
+  {
+    "name": "DoD Guide for Passive RFID Compliance and Item Ide",
+    "emoji": "",
+    "category": "Defense",
+    "created": "Unknown",
+    "lastViewed": "Unknown",
+    "createdFull": "",
+    "sources": 6,
+    "artifacts": 0,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 30,
+    "sizeKB": 28004.1,
+    "shared": false,
+    "sourceNames": [
+      "01-NBLM_USER_CHAT_DOC.md",
+      "OUSW A&S - ASWS - Logistics.pdf",
+      "DoD_FY23_Agency_Financial_Report.pdf",
+      "MIL-STD-129PCH4.pdf",
+      "EPCglobal_HW_Cert.pdf",
+      "Gemini-Gmail-Issue-Summary.txt"
+    ]
+  },
+  {
+    "name": "DoD RMSC-Procurement",
+    "emoji": "\ud83c\udfaf",
+    "category": "Defense",
+    "created": "2026-02-02",
+    "lastViewed": "2026-02-02",
+    "createdFull": "2026-02-02T18:13:27.195975Z",
+    "sources": 14,
+    "artifacts": 0,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 48,
+    "sizeKB": 43125.5,
+    "shared": false,
+    "sourceNames": [
+      "afman21-106.pdf",
+      "Deriving DoD RMSC.md",
+      "26-02-02-Claude-Code-Repo-Cleanup.txt",
+      "MM-NBLM-AMSC-RMSC.txt",
+      "afmci23-113.pdf",
+      "Record_Layout.txt",
+      "26-01-16-NBLM-THREAD-RMSC.txt",
+      "DoD-4100.39-M-Vol10.pdf",
+      "26-02-02-Thread-RMSC-Copilot.txt",
+      "Table-Extracts.txt",
+      "afmci20-102.pdf",
+      "CIM_4105_14.pdf",
+      "RMSC_DERIVATION_CONTEXT.md",
+      "01-NBLM_USER_CHAT_DOC.md"
+    ]
+  },
+  {
+    "name": "DoD Supply Chain Terms and Definitions",
+    "emoji": "",
+    "category": "Defense",
+    "created": "Unknown",
+    "lastViewed": "Unknown",
+    "createdFull": "",
+    "sources": 4,
+    "artifacts": 0,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 13,
+    "sizeKB": 16232.1,
+    "shared": false,
+    "sourceNames": [
+      "inspect_db_report.md",
+      "END TOPIC 4 Rapid Certification.txt",
+      "DLA Data Table Reference Guide",
+      "410039m.pdf"
+    ]
+  },
+  {
+    "name": "Engineering Commander\u2019s Intent_ Architectural Blue",
+    "emoji": "",
+    "category": "Other",
+    "created": "Unknown",
+    "lastViewed": "Unknown",
+    "createdFull": "",
+    "sources": 1,
+    "artifacts": 0,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 7,
+    "sizeKB": 3265.0,
+    "shared": false,
+    "sourceNames": [
+      "26-03-19_NBLM_Intent_Engineering.md"
+    ]
+  },
+  {
+    "name": "GPT-5 Custom Configuration_ A Practitioner\u2019s Imple",
+    "emoji": "",
+    "category": "AI/ML",
+    "created": "Unknown",
+    "lastViewed": "Unknown",
+    "createdFull": "",
+    "sources": 1,
+    "artifacts": 0,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 6,
+    "sizeKB": 325.9,
+    "shared": false,
+    "sourceNames": [
+      "Custom_GPT_Creation_Instructions.md"
+    ]
+  },
+  {
+    "name": "Gemini Safety Guardrails and User Hostility Conver",
+    "emoji": "",
+    "category": "AI/ML",
+    "created": "Unknown",
+    "lastViewed": "Unknown",
+    "createdFull": "",
+    "sources": 2,
+    "artifacts": 1,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 7,
+    "sizeKB": 83233.2,
+    "shared": false,
+    "sourceNames": [
+      "Haha.txt",
+      "Gemini_in_Email_Sucks_Dick.txt"
+    ]
+  },
+  {
+    "name": "GovPurchase Validation and Comparison",
+    "emoji": "\ud83d\udccb",
+    "category": "Other",
+    "created": "2026-01-19",
+    "lastViewed": "2026-01-19",
+    "createdFull": "2026-01-19T20:53:20.889840Z",
+    "sources": 4,
+    "artifacts": 0,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 50,
+    "sizeKB": 818.8,
+    "shared": false,
+    "sourceNames": [
+      "USER.md",
+      "THE-PLAY.md",
+      "validation_report.md",
+      "User_Chat_Doc.md"
+    ]
+  },
+  {
+    "name": "Government Pipeline and Business Development Opera",
+    "emoji": "",
+    "category": "Business Dev",
+    "created": "Unknown",
+    "lastViewed": "Unknown",
+    "createdFull": "",
+    "sources": 25,
+    "artifacts": 1,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 162,
+    "sizeKB": 104823.8,
+    "shared": false,
+    "sourceNames": [
+      "Fekete_OPBs_2023-2024.md",
+      "Fekete_OPRs_2015-2021.md",
+      "01-NBLM_USER_CHAT_DOC.md",
+      "Rob-Tim-Flock-Complete.pdf",
+      "ROB_YELLED_AT_BINDER.pdf",
+      "Fekete_OPRs_2011-2016.md",
+      "Fekete_OPRs_2006-2011.md",
+      "Source One Spares Mail - SOS Docs.pdf",
+      "AFIT_GRP_COMPLETE_Feb_22_2025_1750.md",
+      "sos_intelligence.pdf",
+      "SOS_BD_SOP_DRAFT_V2.docx",
+      "SOS Timeline.txt",
+      "SOS Triage Assessor v4.4.txt",
+      "Kquika Inc_ Company Profile.md",
+      "KQ_SOS_TALKING_PAPER.docx",
+      "sos-mindmap-binder.pdf",
+      "Claude-Agent-SOS-Convo.txt",
+      "SOS-Board of Directors.pdf",
+      "Ro-Wes-Flock.pdf",
+      "Offer Letter-ROBERT J. FEKETE.pdf",
+      "ROB_SOS_TRANSPARENCY_BINDER.pdf",
+      "Source One Spares Company Info.txt",
+      "MARK K. JOHNSON.pdf",
+      "HigherGov Search Addendum.docx",
+      "Source One Capability Statement.docx"
+    ]
+  },
+  {
+    "name": "Guide to AGENTS.md and Codex Platform Integration",
+    "emoji": "",
+    "category": "Other",
+    "created": "Unknown",
+    "lastViewed": "Unknown",
+    "createdFull": "",
+    "sources": 34,
+    "artifacts": 0,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 78,
+    "sizeKB": 44641.4,
+    "shared": false,
+    "sourceNames": [
+      "Codex CLI.txt",
+      "Gemini_Code_Assist_11.txt",
+      "Codex Windows.txt",
+      "Codex_Optimal_Settings.md",
+      "user_technical_execution_doc.md",
+      "expectation_cut_paste_contract.md",
+      "Codex Allow List.txt",
+      "Codex CLI MCP SDK.txt",
+      "GitHub-Copilot-Guide.md",
+      "Gemini_Code_Assist_12.txt",
+      "Codex IDE MCP.txt",
+      "agent_execution_protocol_v1.md",
+      "Codex Cloud Review.txt",
+      "Gemini_Code_Assist_1.txt",
+      "Gemini_Code_Assist_9.txt",
+      "Codex Cloud Environment.txt",
+      "subatomic_definition_v2.md",
+      "Gemini_Code_Assist_7.txt",
+      "definition_95percent_std_v5.md",
+      "Gemini_Code_Assist_13.txt",
+      "Codex_Optimal_Settings-cleaned.md",
+      "AGENTS.md.txt",
+      "Gemini_Code_Assist_5.txt",
+      "expectation_no_pictographs.md",
+      "Gemini_Code_Assist_6.txt",
+      "Gemini_Code_Assist_8.txt",
+      "Gemini_Code_Assist_2.txt",
+      "Codex TypeScript.txt",
+      "Gemini_Code_Assist_4.txt",
+      "Codex cloud read modify run code.txt",
+      "Gemini_Code_Assist_10.txt",
+      "Gemini_Code_Assist_3.txt",
+      "Codex Prompting.txt",
+      "Gemini_Code_Assist_14.txt"
+    ]
+  },
+  {
+    "name": "HAMMER ERC Strategic Analysis and SWOT Report",
+    "emoji": "",
+    "category": "Business Dev",
+    "created": "Unknown",
+    "lastViewed": "Unknown",
+    "createdFull": "",
+    "sources": 4,
+    "artifacts": 0,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 42,
+    "sizeKB": 101370.7,
+    "shared": false,
+    "sourceNames": [
+      "AI vs. Cyber-Fragility Roadmap.md",
+      "HAMMER ERC IBAB SWOT Analysis.txt",
+      "HAMMER ERC SWOT Analysis Research.md",
+      "(3) Alex Bandar _ LinkedIn.pdf"
+    ]
+  },
+  {
+    "name": "HigherGov API Triage_ Metadata and Document Parsin",
+    "emoji": "",
+    "category": "Other",
+    "created": "Unknown",
+    "lastViewed": "Unknown",
+    "createdFull": "",
+    "sources": 26,
+    "artifacts": 0,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 71,
+    "sizeKB": 98491.1,
+    "shared": false,
+    "sourceNames": [
+      "return_hg_api_triage_10_p2.txt",
+      "return_hg_api_triage_10_p3.txt",
+      "return_hg_api_triage_5_p2.txt",
+      "return_hg_api_triage_5_p1.txt",
+      "return_hg_api_triage_10_p4.txt",
+      "return_hg_api_triage_4.txt",
+      "return_hg_api_triage_2.md",
+      "return_hg_api_triage_9.txt",
+      "return_hg_api_triage_12.txt",
+      "return_hg_api_triage_3_p2.txt",
+      "return_hg_api_triage_1A-D.md",
+      "return_hg_api_triage_6_p2.txt",
+      "return_hg_api_triage_16_p2.txt",
+      "return_hg_api_triage_10_p1.txt",
+      "return_hg_api_triage_16_p3.txt",
+      "return_hg_api_triage_13.txt",
+      "return_hg_api_triage_7.txt",
+      "return_hg_api_triage_16_p1.txt",
+      "return_hg_api_triage_15.txt",
+      "return_hg_api_triage_6_p1.md",
+      "return_hg_api_triage_14.txt",
+      "return_hg_api_triage_6_p3.txt",
+      "return_hg_api_triage_8.txt",
+      "return_hg_api_triage_6_p4.txt",
+      "return_hg_api_triage_11.txt",
+      "return_hg_api_triage_3_p1.txt"
+    ]
+  },
+  {
+    "name": "In-Domain Orbital Logistics and Cargo Fitment Anal",
+    "emoji": "",
+    "category": "Space/Orbital",
+    "created": "Unknown",
+    "lastViewed": "Unknown",
+    "createdFull": "",
+    "sources": 27,
+    "artifacts": 0,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 89,
+    "sizeKB": 119482.6,
+    "shared": false,
+    "sourceNames": [
+      "26-01-30-NSN-Report-Claude-1.txt",
+      "26-01-30-NSN-Report-Claude-2.txt",
+      "Database-DIMs-Inference-2.txt",
+      "Bishop_1_repackaging_summary.txt",
+      "Database-test-2.txt",
+      "salesman_fitment_scale_report.md",
+      "Bishop_2_repackaging_summary.txt",
+      "salesman_fitment_81_report.md",
+      "Bishop_2_fitment_summary.txt",
+      "Pre-Alogrithm-Audit-NBLM-2.txt",
+      "comparative_repackaging_summary.md",
+      "SpaceWerx-DIMS-Workflow.txt",
+      "226-01-31-QC_AGENT-Review-2.txt",
+      "Database-test.txt",
+      "Database-DIMS-Plan.txt",
+      "Bishop_1_fitment_report.md",
+      "Bishop_1_repackaging_report.md",
+      "Bishop_1_fitment_summary.txt",
+      "26-01-31-QC_AGENT-Review-1.txt",
+      "Bishop_2_repackaging_report.md",
+      "01-NBLM_USER_CHAT_DOC.md",
+      "SPACEWERX_LOGISTICS_2026_BUNDLE.txt",
+      "salesman_baseline_validation.md",
+      "comparative_fitment_summary.md",
+      "Gmail - FW_ NSN Study w_Hop Aero.pdf",
+      "Database-test-3.txt",
+      "Bishop_2_fitment_report.md"
+    ]
+  },
+  {
+    "name": "Influence Matrix",
+    "emoji": "\ud83d\udd78\ufe0f",
+    "category": "Other",
+    "created": "2026-02-02",
+    "lastViewed": "2026-02-04",
+    "createdFull": "2026-02-02T23:17:01.711643Z",
+    "sources": 4,
+    "artifacts": 0,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 20,
+    "sizeKB": 211.7,
+    "shared": false,
+    "sourceNames": [
+      "Network-Power-Influence-Repos-1.md",
+      "steve.txt",
+      "01-NBLM_USER_CHAT_DOC.md",
+      "RASCLS.md"
+    ]
+  },
+  {
+    "name": "Intelligence Dossier_ Michael T. Edgar, Architect-",
+    "emoji": "",
+    "category": "Other",
+    "created": "Unknown",
+    "lastViewed": "Unknown",
+    "createdFull": "",
+    "sources": 2,
+    "artifacts": 0,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 10,
+    "sizeKB": 142.4,
+    "shared": false,
+    "sourceNames": [
+      "Michael Edgar Profile.md",
+      "michael_edgar_report.md"
+    ]
+  },
+  {
+    "name": "Intent Engineering",
+    "emoji": "\ud83c\udfce\ufe0f",
+    "category": "Other",
+    "created": "2026-03-18",
+    "lastViewed": "2026-03-22",
+    "createdFull": "2026-03-18T01:21:07.710557Z",
+    "sources": 16,
+    "artifacts": 0,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 73,
+    "sizeKB": 12014.5,
+    "shared": false,
+    "sourceNames": [
+      "2410.10762v4.pdf",
+      "2307.09702v4.pdf",
+      "Tool Risk-Rated Escalation2.md",
+      "LLM Agent Failure Modes Analysis.md",
+      "2026-03-18_architecture-brainstorm.md",
+      "Tool Risk-Rated Escalation.txt",
+      "intent-engineering-transcript.md",
+      "State of Autonomous Agent Judgment.md",
+      "2511.15755v2.pdf",
+      "2025.ranlp-1.124.pdf",
+      "2603.03305v1.pdf",
+      "2601.09883v1.pdf",
+      "Failure Mode Catalog.txt",
+      "AI-vs-AI-6.txt",
+      "LLM-State-Machine.md",
+      "Commander's Intent for AI Agents.md"
+    ]
+  },
+  {
+    "name": "Karen Fekete_ Medical Encounters and Prescription ",
+    "emoji": "",
+    "category": "Medical",
+    "created": "Unknown",
+    "lastViewed": "Unknown",
+    "createdFull": "",
+    "sources": 11,
+    "artifacts": 2,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 36,
+    "sizeKB": 277289.6,
+    "shared": false,
+    "sourceNames": [
+      "Karen_Medical_Chunk_3_of_4.txt",
+      "01-NBLM_USER_CHAT_DOC.md",
+      "Karen-St-Lukes-Binder1.pdf",
+      "HAIMS.pdf",
+      "26-02-04-KarenLabsBinder.pdf",
+      "Karen-Binder-1.pdf",
+      "Karen_Medical_Chunk_4_of_4.txt",
+      "GENESIS.pdf",
+      "Karen_Medical_Chunk_2_of_4.txt",
+      "Karen_Medical_Chunk_1_of_4.txt",
+      "Karen-med-summary.txt"
+    ]
+  },
+  {
+    "name": "Karen Fekete_ Medication History and Treatment Eff",
+    "emoji": "",
+    "category": "Medical",
+    "created": "Unknown",
+    "lastViewed": "Unknown",
+    "createdFull": "",
+    "sources": 63,
+    "artifacts": 0,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 166,
+    "sizeKB": 57396.7,
+    "shared": false,
+    "sourceNames": [
+      "76Patient_Portal.md",
+      "2Patient_Portal.md",
+      "6Patient_Portal.md",
+      "AHLTA_part08.md",
+      "05_TREATMENT_FAILURES.md",
+      "Karen_Letter.md",
+      "4Patient_Portal.md",
+      "Letter.md",
+      "00_INDEX.md",
+      "Off_Base_Medical_Records_Fekete.md",
+      "Referral_Provider_Letter.md",
+      "01_CURRENT_STATUS.md",
+      "Patient_Portal.md",
+      "Primary_Care_Note_09-20-2023.md",
+      "9Patient_Portal.md",
+      "Primary_Care_Note_10-18-2023.md",
+      "Primary_Care_Note_12-12-2023.md",
+      "Gmail_-_Last_one.md",
+      "AHLTA_part02.md",
+      "KAREN_SSN_DOC.md",
+      "03_MEDICATIONS.md",
+      "06_CLINICAL_PEARLS.md",
+      "Gmail_-_Quick_Conclusions.md",
+      "8Patient_Portal.md",
+      "01-NBLM_USER_CHAT_DOC.md",
+      "Karen-Binder-1_part02.md",
+      "3Patient_Portal.md",
+      "7Patient_Portal.md",
+      "AHLTA_part05.md",
+      "AHLTA_part09.md",
+      "Primary_Care_Note_09-29-2023.md",
+      "GENESIS_part03.md",
+      "MyEligibilityLetter.md",
+      "Karen_ER_Visit_25-07-15.md",
+      "Primary_Care_Note_10-11-2022.md",
+      "VOL_1.md",
+      "Karen-Binder-1_part01.md",
+      "Karen_Authorization_Summary.md",
+      "AHLTA_part01.md",
+      "RELEASE.md",
+      "Karen_PCM_Dr__Lambert.md",
+      "AHLTA_part03.md",
+      "04_CHRONOLOGY.md",
+      "milConnect_-_BWE.md",
+      "healow_-_Appt__Confirmation.md",
+      "AHLTA_part04.md",
+      "EBV.pdf",
+      "AHLTA_part06.md",
+      "1Patient_Portal.md",
+      "Karen_Sleep_Referral.md",
+      "AHLTA_part07.md",
+      "5Patient_Portal.md",
+      "Primary_Care_Note_06-01-2022.md",
+      "Karen_TriCare_Referrals.md",
+      "CRChest.pdf",
+      "GENESIS_part01.md",
+      "10Patient_Portal.md",
+      "16769870580.md",
+      "02_CONDITIONS.md",
+      "HAIMS.md",
+      "Hemoglobin.pdf",
+      "GENESIS_part02.md",
+      "getLabDetails.pdf"
+    ]
+  },
+  {
+    "name": "LEAP Task Order ROM and Teaming Agreement Coordina",
+    "emoji": "",
+    "category": "Business Dev",
+    "created": "Unknown",
+    "lastViewed": "Unknown",
+    "createdFull": "",
+    "sources": 22,
+    "artifacts": 4,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 127,
+    "sizeKB": 428881.3,
+    "shared": false,
+    "sourceNames": [
+      "FEKETE_OPRs_2006-2011.md",
+      "JD_Signal_Continuous_Thread.md",
+      "Bishop-Screenshot-Binder.pdf",
+      "Bishop_1_repackaging_summary.txt",
+      "FEKETE_DECORATIONS_AWARDS.md",
+      "Email_Draft_IP_Concerns_ROM_v2.docx",
+      "Bishop_2_repackaging_summary.txt",
+      "26-03-14_LEAP_TO_NBLM_Thread.md",
+      "Fitment-Algorithm.txt",
+      "FEKETE_OPRs_2015-2021.md",
+      "Rob_Fekete_Profile.md",
+      "Jondavid_DuVall_LinkedIn.md",
+      "FEKETE_BSM_RECOMMENDATION.md",
+      "FEKETE _RACK.md",
+      "FEKETE_OPBs_2023-2024.md",
+      "dossier_jondavid_duvall.md",
+      "FEKETE_OPRs_2011-2016.md",
+      "Fitment_Audit.txt",
+      "26-03-11-LEAP_TO_ROM-transcript.txt",
+      "FEKETE_PROFESSIONAL_CERTIFICATIONS.md",
+      "Container_Fitment_Analysis.docx",
+      "dossier_jondavid_duvall_gpt.docx.md"
+    ]
+  },
+  {
+    "name": "MASTER-Agent-NSN-Mnfg",
+    "emoji": "\ud83d\udcac",
+    "category": "NSN/Manufacturing",
+    "created": "2026-01-19",
+    "lastViewed": "2026-01-24",
+    "createdFull": "2026-01-19T13:29:01.226107Z",
+    "sources": 9,
+    "artifacts": 0,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 20,
+    "sizeKB": 1868.6,
+    "shared": false,
+    "sourceNames": [
+      "Master-Schema-NIIN-Checklist.txt",
+      "Schema_Flat.txt",
+      "THE_PLAY.md",
+      "26-01-24-NIIN-DB-Build-QC-2.txt",
+      "User_Chat_Doc.md",
+      "Distill-Aggregation-1.txt",
+      "NBLM-Podcast-Binder-1.pdf",
+      "26-01-24-NIIN-DB-Build-1.txt",
+      "TTPs-Prompt-AntiGravity-cleaned.md"
+    ]
+  },
+  {
+    "name": "MASTER-RISK CATEGORIES_ Additive Manufacturing in ",
+    "emoji": "",
+    "category": "NSN/Manufacturing",
+    "created": "Unknown",
+    "lastViewed": "Unknown",
+    "createdFull": "",
+    "sources": 74,
+    "artifacts": 0,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 186,
+    "sizeKB": 30636.3,
+    "shared": false,
+    "sourceNames": [
+      "AM PINN Competitor Stack Map.md",
+      "850831611-ASME-Y14-46-2017.txt",
+      "MIL-HDBK-5J_Chunk_1.md",
+      "END EZ-SB-13-001_RevA.txt",
+      "001-NBLM_USER_CHAT_DOC.md",
+      "JSSG-2006_Chunk_1_.md",
+      "INCONEL 718 UNS N07718.pdf",
+      "END EZ-SB-13-002.txt",
+      "END TOPIC 4 Rapid Certification.txt",
+      "F3312_F3312M-23.pdf",
+      "CM-S-008_Chunk_4.md",
+      "MIL-HDBK-5J_Chunk_7.md",
+      "JSSG-2006_Chunk_5.md",
+      "MIL-HDBK-17-1E_Chunk_5.md",
+      "MIL-HDBK-5J_Chunk_9.md",
+      "END NASA MSFC-STD-3716.txt",
+      "MIL-HDBK-5J_Chunk_4.md",
+      "Vol-10-DoD-4100_39-M_CHUNK_2.txt",
+      "Superalloys_2010_455_469.pdf",
+      "JSSG-2006_Chunk_3.md",
+      "CM-S-008_Chunk_1.md",
+      "MIL-HDBK-17-1E_Chunk_1.md",
+      "MIL-HDBK-17-1E_Chunk_3.md",
+      "MIL-HDBK-17-1E_Chunk_6.md",
+      "DeepONet & ResUNet Report.txt",
+      "AM_Certification_Technical_Report.md",
+      "MMPDS-11-Preview.txt",
+      "twelve-cell-matrix.md",
+      "insights_deeponet_am.md",
+      "additive_mfg.pdf",
+      "MIL-HDBK-17-1E_Chunk_4.md",
+      "ASTM-E2860.txt",
+      "MIL-HDBK-17-1E_Chunk_2.md",
+      "msfcspec3717baseline_Chunk_1.md",
+      "END EZ-SB-13-003.txt",
+      "MIL-STD-31000.txt",
+      "JSSG-2006_Chunk_2.md",
+      "MIL-STD-1798D_Chunk_1.md",
+      "MIL-HDBK-5J_Chunk_3.md",
+      "EZ-SB-19-01.pdf",
+      "MIL-STD-889D.pdf",
+      "MIL-HDBK-5J_Chunk_2.md",
+      "MIL-STD-3021_CHG-2_Chunk_1.md",
+      "MIL-HDBK-1823_Chunk_1.md",
+      "MIL-HDBK-5J_Chunk_6.md",
+      "END DI-SESS-82465.txt",
+      "MIL-HDBK-5J_Chunk_8.md",
+      "RCUF_Framework_Complete_Reference.md",
+      "MIL-STD-1587F_Chunk_1.md",
+      "volume6.pdf",
+      "MIL-HDBK-5J_Chunk_5.md",
+      "CM-S-008_Chunk_3.md",
+      "JSSG-2006_Chunk_4.md",
+      "F3572-22.pdf",
+      "AM_Forensics_Report.md",
+      "ML-RT-Agenda-5-Benjamin-speech.pdf",
+      "MIL-HDBK-5J_Chunk_10.md",
+      "MIL-STD-1530D_Chunk_1.md",
+      "Vol-10-DoD-4100_39-M_CHUNK_1.txt",
+      "RCUF_Build_Manifest.md",
+      "MMPDS_ADOPTION_NOTICE.pdf",
+      "CM-S-008_Chunk_2.md",
+      "AFGROW_APP_EQUIVS.txt",
+      "ML23324A253.pdf",
+      "cm-s-008_issue-04_final-tracked.pdf",
+      "Vol-10-DoD-4100_39-M_CHUNK_3.txt",
+      "insights_dism_am.md",
+      "insights_synchrotron_cavs.md",
+      "AFGROW_WEBSITE_WIKIPEDIA.txt",
+      "Vol-10-DoD-4100_39-M_CHUNK_4.txt",
+      "AM_Certification_Models_Report.md",
+      "MIL-STD-1568E_Chunk_1.md",
+      "insights_murakami_am.md",
+      "EZ-SB-13-001-RevA.txt"
+    ]
+  },
+  {
+    "name": "MDA SHIELD IDIQ_ Task Order Intelligence and Indus",
+    "emoji": "",
+    "category": "Defense",
+    "created": "Unknown",
+    "lastViewed": "Unknown",
+    "createdFull": "",
+    "sources": 7,
+    "artifacts": 0,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 28,
+    "sizeKB": 829.8,
+    "shared": false,
+    "sourceNames": [
+      "Fact_check_Gemini2.txt",
+      "00-ROB.md",
+      "Fact_Check_Perplexity2.md",
+      "Fact_Check_Perplexity.md",
+      "Fact_check_Gemini.txt",
+      "001-NBLM_USER_CHAT_DOC.md",
+      "michael edgar, NCARB _ LinkedIn.pdf"
+    ]
+  },
+  {
+    "name": "Mastering NotebookLM_ Techniques for Customizing L",
+    "emoji": "",
+    "category": "NotebookLM",
+    "created": "Unknown",
+    "lastViewed": "Unknown",
+    "createdFull": "",
+    "sources": 2,
+    "artifacts": 0,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 26,
+    "sizeKB": 418.9,
+    "shared": false,
+    "sourceNames": [
+      "Verified Working Techniques.docx.md",
+      "01-NBLM_USER_CHAT_DOC.md"
+    ]
+  },
+  {
+    "name": "Medical Summary for Vincent Barnard_ Ureteroscopy ",
+    "emoji": "",
+    "category": "Medical",
+    "created": "Unknown",
+    "lastViewed": "Unknown",
+    "createdFull": "",
+    "sources": 5,
+    "artifacts": 0,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 62,
+    "sizeKB": 37601.7,
+    "shared": false,
+    "sourceNames": [
+      "2026-02-16_Chest_XRay_Report.pdf",
+      "2026-02-16_EKG_Report.pdf",
+      "2026-02-20_Summary_Belton_Regional.md",
+      "2026-02-16_Medications_List.pdf",
+      "2026-02-18_LabResults.pdf"
+    ]
+  },
+  {
+    "name": "Meta-Prompt Creator",
+    "emoji": "\ud83d\udde3\ufe0f",
+    "category": "AI/ML",
+    "created": "2025-10-26",
+    "lastViewed": "2026-03-01",
+    "createdFull": "2025-10-26T14:27:24.324202Z",
+    "sources": 27,
+    "artifacts": 0,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 93,
+    "sizeKB": 1003.4,
+    "shared": false,
+    "sourceNames": [
+      "Guide_Prompt_NotebookLM_Web.md",
+      "Guide_Prompt_GovWinIQ_Web.md",
+      "GAIS-Meta-Prompt-Builder-Thread-1.txt",
+      "Guide_Prompt_ DeepSeek_Web.md",
+      "video-prompt-cheat.md",
+      "Guide_Prompt_SciSpace_Web.md",
+      "Guide_Prompt_Gemini_Deep_Think_Web.md",
+      "Canva-ChatGPT-SOP.md",
+      "Guide_Repo_ToDo_IDE_Web.md",
+      "Guide_Prompt_You_ARI_Web.md",
+      "New Feature Implementation Strategy",
+      "Guide_Prompt_ ChatGPT5_Web.md",
+      "prompting_agents_cursor_cleaned.md",
+      "Guide_Prompt_Comet_Agentic_Browser.md",
+      "Guide_Prompt_Claude_Web.md",
+      "Guide_Prompt_Mistral_Codestral_API.md",
+      "001-NBLM_USER_CHAT_DOC.md",
+      "Guide_Prompt_Grok4_Web.md",
+      "Guide_Prompt_HigherGov_Web.md",
+      "Guide_Prompt_Claude_Code_CLI_IDE.md",
+      "Guide_Prompt_ChatGPT_Codex_CLI_IDE.md",
+      "Guide_Prompt_Gemini_Live_Web.md",
+      "Codex Prompting.txt",
+      "Custom_GPT_Creation_Instructions.md",
+      "Guide_Prompt_Replit_Agent_Web.md",
+      "User's Code Intrests",
+      "Google AI Studio.pdf"
+    ]
+  },
+  {
+    "name": "Military Additive Manufacturing Qualification and ",
+    "emoji": "",
+    "category": "Defense Tech",
+    "created": "Unknown",
+    "lastViewed": "Unknown",
+    "createdFull": "",
+    "sources": 21,
+    "artifacts": 0,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 53,
+    "sizeKB": 2262.2,
+    "shared": false,
+    "sourceNames": [
+      "END DI-SESS-82465.txt",
+      "END EZ-SB-13-003.txt",
+      "END aftci62-602.txt",
+      "END DAFGM2020-63-149-01.txt",
+      "END dodi5000.93_dafi63-149.txt",
+      "END MIL-HDBK-5J CHUNK 1-4.txt",
+      "END AFGSC CCIT Documents.txt",
+      "JSSG-2006_Chunk_3.md",
+      "JSSG-2006_Chunk_5.md",
+      "END EZ-SB-13-001-RevA.txt",
+      "END MIL-STD-31000.txt",
+      "END MIL-HDBK-5J CHUNK 4-4.txt",
+      "MIL-STD-1587F_Chunk_1.md",
+      "END TOPIC 4 Rapid Certification.txt",
+      "END AFGSC2026ShowcaseQuadChart.txt",
+      "END EZ-SB-13-002.txt",
+      "END MIL-HDBK-5J CHUNK 3-4.txt",
+      "JSSG-2006_Chunk_1.md",
+      "END MIL-HDBK-5J CHUNK 2-4.txt",
+      "JSSG-2006_Chunk_2.md",
+      "JSSG-2006_Chunk_4.md"
+    ]
+  },
+  {
+    "name": "Multi-Convo Transcript Repair",
+    "emoji": "\ud83d\uddc4\ufe0f",
+    "category": "Other",
+    "created": "2026-03-20",
+    "lastViewed": "2026-03-22",
+    "createdFull": "2026-03-20T18:08:20.417798Z",
+    "sources": 23,
+    "artifacts": 0,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 51,
+    "sizeKB": 594.2,
+    "shared": false,
+    "sourceNames": [
+      "page-2026-03-20-15-35-25.md",
+      "page-2026-03-20-15-36-53.md",
+      "PROMPT-Convo-Name-PLAUD.txt",
+      "page-2026-03-20-15-34-41.md",
+      "page-2026-03-20-15-31-31.md",
+      "26-01-16-TRANSCRIPT_REPAIR.txt",
+      "page-2026-03-20-15-33-26.md",
+      "page-2026-03-20-15-36-24.md",
+      "page-2026-03-20-15-36-12.md",
+      "page-2026-03-20-15-31-46.md",
+      "page-2026-03-20-15-36-00.md",
+      "page-2026-03-20-15-37-18.md",
+      "page-2026-03-20-15-39-37.md",
+      "TURBOS_SUMMARY_PROMPTS.txt",
+      "transcript_processing_prompt.md",
+      "26-03-20_Claude_Code_1.md",
+      "page-2026-03-20-15-35-40.md",
+      "page-2026-03-20-15-34-59.md",
+      "page-2026-03-20-15-34-00.md",
+      "Prompt_New_Transcript_Name_PLAUD.txt",
+      "page-2026-03-20-15-33-42.md",
+      "page-2026-03-20-15-34-26.md",
+      "page-2026-03-20-15-36-39.md"
+    ]
+  },
+  {
+    "name": "Multi-Model AI Pipelines for Software Engineering",
+    "emoji": "",
+    "category": "Business Dev",
+    "created": "Unknown",
+    "lastViewed": "Unknown",
+    "createdFull": "",
+    "sources": 13,
+    "artifacts": 2,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 65,
+    "sizeKB": 182767.0,
+    "shared": false,
+    "sourceNames": [
+      "Multi-Model_AI_Pipelines_Gemini.md",
+      "Multi-Model_AI_Pipelines_Qwen1.md",
+      "Multi-Model_AI_Pipelines_DeepSeek.md",
+      "Multi-Model_AI_Pipelines_Grok.md",
+      "Multi-Model_AI_Pipelines_Qwen2.md",
+      "Multi-Model_AI_Pipelines_ChatGPT.md",
+      "Multi-Model_AI_Pipelines_KimiK2.md",
+      "Multi-Model_AI_Pipelines_Mistral.md",
+      "Multi-Model_AI_Pipelines_YouDR.md",
+      "Multi-Model_AI_Pipelines_Claude.md.md",
+      "Multi-Model_AI_Pipelines_YouARI.md",
+      "Multi-Model_AI_Pipelines_Manus.md",
+      "Multi-Model_AI_Pipelines_SciSpace.md"
+    ]
+  },
+  {
+    "name": "NBLM Defense Logistics and Strategic Data Inventor",
+    "emoji": "",
+    "category": "Defense",
+    "created": "Unknown",
+    "lastViewed": "Unknown",
+    "createdFull": "",
+    "sources": 2,
+    "artifacts": 0,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 5,
+    "sizeKB": 207.3,
+    "shared": false,
+    "sourceNames": [
+      "SOURCE-FILES-1.md",
+      "SOURCE-FILES-2.md"
+    ]
+  },
+  {
+    "name": "NIIN Database Validation",
+    "emoji": "",
+    "category": "Other",
+    "created": "2026-01-20",
+    "lastViewed": "2026-01-20",
+    "createdFull": "2026-01-20T13:51:47.770961Z",
+    "sources": 0,
+    "artifacts": 0,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 1,
+    "sizeKB": 1.9,
+    "shared": false,
+    "sourceNames": []
+  },
+  {
+    "name": "NotebookLM MCP Integration and Agentic Coding Work",
+    "emoji": "",
+    "category": "NotebookLM",
+    "created": "Unknown",
+    "lastViewed": "Unknown",
+    "createdFull": "",
+    "sources": 1,
+    "artifacts": 0,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 19,
+    "sizeKB": 97.5,
+    "shared": false,
+    "sourceNames": [
+      "NotebookLM MCP Coding Workflows.md"
+    ]
+  },
+  {
+    "name": "NotebookLM Source Document Optimization and Retrie",
+    "emoji": "",
+    "category": "NotebookLM",
+    "created": "Unknown",
+    "lastViewed": "Unknown",
+    "createdFull": "",
+    "sources": 1,
+    "artifacts": 0,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 9,
+    "sizeKB": 321.4,
+    "shared": false,
+    "sourceNames": [
+      "NotebookLM Source Optimization 3.md"
+    ]
+  },
+  {
+    "name": "OFFICIAL_ 2026 AFGSC Commercial Integration and Tr",
+    "emoji": "",
+    "category": "Defense",
+    "created": "Unknown",
+    "lastViewed": "Unknown",
+    "createdFull": "",
+    "sources": 6,
+    "artifacts": 0,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 39,
+    "sizeKB": 7030.5,
+    "shared": false,
+    "sourceNames": [
+      "Draft email",
+      "SBBC_EVAL_PORTAL.pdf",
+      "AFGSCCCIT-v1-0.pdf",
+      "01-NBLM_PODCAST_CHAT.md",
+      "ALEX_TEXT_JOE_CONFUSED.png",
+      "OutPaceJ4WhitePaper.pdf"
+    ]
+  },
+  {
+    "name": "OL_ Agentic Framework Landscape",
+    "emoji": "\ud83e\udd16",
+    "category": "Other",
+    "created": "2026-02-28",
+    "lastViewed": "2026-03-02",
+    "createdFull": "2026-02-28T21:27:00.148732Z",
+    "sources": 1,
+    "artifacts": 2,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 47,
+    "sizeKB": 322950.2,
+    "shared": false,
+    "sourceNames": [
+      "Agentic Framework Landscape.md"
+    ]
+  },
+  {
+    "name": "OL_ Personality Emulation",
+    "emoji": "\ud83e\udd16",
+    "category": "Other",
+    "created": "2026-02-28",
+    "lastViewed": "2026-02-28",
+    "createdFull": "2026-02-28T20:57:14.695859Z",
+    "sources": 4,
+    "artifacts": 2,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 46,
+    "sizeKB": 275970.7,
+    "shared": false,
+    "sourceNames": [
+      "Personality_Emulation_GlobalGPT.txt",
+      "Personality_Emulation_Grok.txt",
+      "Personality_Emulation_YouDR.md",
+      "Negotiation Advantage Research.md"
+    ]
+  },
+  {
+    "name": "OpenClaw Ops",
+    "emoji": "\ud83e\udd16",
+    "category": "OpenClaw",
+    "created": "2026-02-07",
+    "lastViewed": "2026-02-08",
+    "createdFull": "2026-02-07T13:41:14.273467Z",
+    "sources": 27,
+    "artifacts": 0,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 64,
+    "sizeKB": 313.0,
+    "shared": false,
+    "sourceNames": [
+      "LESSONS_LEARNED.md",
+      "OpenClaw-Written-Limited-Memory.txt",
+      "Problem Preempting.md",
+      "RUBRIC-TEMPLATE.md",
+      "PLAN-TEMPLATE.md",
+      "NotebookLM-QC-Instructions-MERGED.md",
+      "8-phase task execution lifecycle.md",
+      "SOUL-addition.md",
+      "OpenClaw-IDE-TTPs.md",
+      "8-phase execution lifecycle-2.md",
+      "USER-addition.md",
+      "WORKLOG-TEMPLATE.md",
+      "OpenClaw-FORBIDDEN_ACTIONS.txt",
+      "disciplined execution framework.md",
+      "Spec-first artifacts.md",
+      "BMAD-Techniques.md",
+      "Best Practices for Prompting.md",
+      "lessons learned MD.md",
+      "v3-Deployment-Guide.md",
+      "nblm-qc-SKILL.md",
+      "Gap It Fills.md",
+      "OpenClaw-Workflow-Protocol-v3.md",
+      "01-NBLM_USER_CHAT_DOC.md",
+      "USER-EXPLICIT vs AGENT-INFERRED.md",
+      "Two Failure Modes.md",
+      "DECISIONS-TEMPLATE.md",
+      "AGENTS-addition.md"
+    ]
+  },
+  {
+    "name": "OpenClaw_ Architecture and Multi-Agent Orchestrati",
+    "emoji": "",
+    "category": "OpenClaw",
+    "created": "Unknown",
+    "lastViewed": "Unknown",
+    "createdFull": "",
+    "sources": 6,
+    "artifacts": 2,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 33,
+    "sizeKB": 116394.3,
+    "shared": false,
+    "sourceNames": [
+      "OpenClaw_Developer_Workflow_YouDR.md",
+      "OpenClaw_Developer_Workflow_Claude.md",
+      "OpenClaw_Developer_Workflow_Gemini.md",
+      "OpenClaw_Developer_Workflow_Ernie.txt",
+      "OpenClaw_Developer_Workflow_GPT.md",
+      "OpenClaw_Developer_Workflow_Qwen.md"
+    ]
+  },
+  {
+    "name": "OpenClaw_ Multi-Agent Workflows and Configuration-",
+    "emoji": "",
+    "category": "OpenClaw",
+    "created": "Unknown",
+    "lastViewed": "Unknown",
+    "createdFull": "",
+    "sources": 6,
+    "artifacts": 0,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 25,
+    "sizeKB": 377.1,
+    "shared": false,
+    "sourceNames": [
+      "OpenClaw_Developer_Workflow_YouDR.md",
+      "OpenClaw_Developer_Workflow_Ernie.txt",
+      "OpenClaw_Developer_Workflow_Gemini.md",
+      "OpenClaw_Developer_Workflow_Qwen.md",
+      "OpenClaw_Developer_Workflow_Claude.md",
+      "OpenClaw_Developer_Workflow_GPT.md"
+    ]
+  },
+  {
+    "name": "OpenClaw_ Official Docs",
+    "emoji": "\ud83e\udde0",
+    "category": "OpenClaw",
+    "created": "2026-03-01",
+    "lastViewed": "2026-03-22",
+    "createdFull": "2026-03-01T19:40:57.934834Z",
+    "sources": 18,
+    "artifacts": 0,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 38,
+    "sizeKB": 7756.9,
+    "shared": false,
+    "sourceNames": [
+      "OC-Companion-Apps-Binder.pdf",
+      "cursor_openclaw_downtime_issue.md",
+      "OC-Gateway-Operations-Binder.pdf",
+      "OC-Platforms-Binder.pdf",
+      "OC-Install-Update-Binder.pdf",
+      "OC-macOS-Companion-App-Binder.pdf",
+      "OC-Core-Concepts-Binder.pdf",
+      "openclaw-issues.txt",
+      "OC-Operations-Safety-Binder.pdf",
+      "OC-Providers-UX-Binder.pdf",
+      "OC-Tools-Automation-Binder.pdf",
+      "OC-Workspace-Templates-Binder.pdf",
+      "OC-Experiments-Binder.pdf",
+      "OC-Start-Here-Binder.pdf",
+      "OC-Project-Testing-Release-Binder.pdf",
+      "OC-Nodes-Media-Voice-Binder.pdf",
+      "OC-Providers-Ingress-Binder.pdf",
+      "OC-Directory-Start-Binder.pdf"
+    ]
+  },
+  {
+    "name": "OpenClaw_ Optimization",
+    "emoji": "\ud83e\udd16",
+    "category": "OpenClaw",
+    "created": "2026-03-01",
+    "lastViewed": "2026-03-22",
+    "createdFull": "2026-03-01T15:37:15.238058Z",
+    "sources": 4,
+    "artifacts": 1,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 23,
+    "sizeKB": 110392.3,
+    "shared": false,
+    "sourceNames": [
+      "OpenClaw Research Notes.md",
+      "OpenClaw Constraint Engineering.md",
+      "OpenClaw 2026 Technical Analysis.md",
+      "OpenClaw AGENT.md Architecture.md"
+    ]
+  },
+  {
+    "name": "OpenClaw_ Repositories, Websites, & Research",
+    "emoji": "",
+    "category": "OpenClaw",
+    "created": "Unknown",
+    "lastViewed": "Unknown",
+    "createdFull": "",
+    "sources": 7,
+    "artifacts": 0,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 29,
+    "sizeKB": 234.2,
+    "shared": false,
+    "sourceNames": [
+      "Prompt OpenClaw Resources.txt",
+      "OpenClaw Resource Guide.md",
+      "OpenClaw Resource Compilation.txt",
+      "OpenClaw-Resources-YouAI.txt",
+      "OpenClaw Ecosystem Guide.md",
+      "Popular OpenClaw Repositories.txt",
+      "Papers-Citing-OC.md"
+    ]
+  },
+  {
+    "name": "OutPace - GTM",
+    "emoji": "\ud83c\udf96\ufe0f",
+    "category": "OutPace",
+    "created": "2026-02-01",
+    "lastViewed": "2026-02-22",
+    "createdFull": "2026-02-01T17:59:28.375229Z",
+    "sources": 10,
+    "artifacts": 1,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 70,
+    "sizeKB": 294032.1,
+    "shared": false,
+    "sourceNames": [
+      "Micro-Firms.md",
+      "OutPace Branding Research Report.md",
+      "GovCon Space.md",
+      "Defense Consulting Market Research.md",
+      "Rob_Fekete_Profile-Y.md",
+      "mavendefense.com_.md",
+      "01-NBLM_USER_CHAT_DOC.md",
+      "Rob_AFIT_GRP_Chunk_1-Y.md",
+      "Rob_Human-AI_Case_Study-Y.md",
+      "OutPace Current Website Analysis.md"
+    ]
+  },
+  {
+    "name": "OutPace Doctrine_ Rick",
+    "emoji": "\ud83c\udfb9",
+    "category": "OutPace",
+    "created": "2026-03-22",
+    "lastViewed": "2026-03-22",
+    "createdFull": "2026-03-22T20:17:20.829512Z",
+    "sources": 6,
+    "artifacts": 0,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 13,
+    "sizeKB": 48.3,
+    "shared": false,
+    "sourceNames": [
+      "IDENTITY.md",
+      "PHYSICAL_ARCHITECTURE.md",
+      "USER.md",
+      "Baseline_Context_About_Rob.md",
+      "HEARTBEAT.md",
+      "AGENTS.md"
+    ]
+  },
+  {
+    "name": "OutPace OTA Planning Repository",
+    "emoji": "\u2699\ufe0f",
+    "category": "OutPace",
+    "created": "2026-02-05",
+    "lastViewed": "2026-02-07",
+    "createdFull": "2026-02-05T19:13:36.547366Z",
+    "sources": 8,
+    "artifacts": 1,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 30,
+    "sizeKB": 186317.2,
+    "shared": false,
+    "sourceNames": [
+      "OTA-Plan-1.txt",
+      "OTA_Req_Digitizied_Data_Build.md",
+      "Tiers within Tiers.txt",
+      "OTASchemas1.txt",
+      "OTA_Req_Digitizied_Data_Build3.md",
+      "OTA_Req_Digitizied_Data_Build2.md",
+      "AFGSC OTA HARD REQUIREMENTS.txt",
+      "FA6800-26-S-C001 Thread.md"
+    ]
+  },
+  {
+    "name": "OutPace Operational Sync and Defense Strategy Road",
+    "emoji": "",
+    "category": "OutPace",
+    "created": "Unknown",
+    "lastViewed": "Unknown",
+    "createdFull": "",
+    "sources": 2,
+    "artifacts": 0,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 6,
+    "sizeKB": 365.0,
+    "shared": false,
+    "sourceNames": [
+      "OutPace_Rick_TG_1_chunk_01.txt",
+      "OutPace_Rick_TG_1_chunk_02.txt"
+    ]
+  },
+  {
+    "name": "OutPace Systems and AI Operations Log 2025-2026",
+    "emoji": "",
+    "category": "OutPace",
+    "created": "Unknown",
+    "lastViewed": "Unknown",
+    "createdFull": "",
+    "sources": 2,
+    "artifacts": 0,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 6,
+    "sizeKB": 51.5,
+    "shared": false,
+    "sourceNames": [
+      "00-ROB.md",
+      "Perplexity_Memories.txt"
+    ]
+  },
+  {
+    "name": "Outpace_ Securing a Superior Rating for Air Force ",
+    "emoji": "",
+    "category": "OutPace",
+    "created": "Unknown",
+    "lastViewed": "Unknown",
+    "createdFull": "",
+    "sources": 0,
+    "artifacts": 0,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 11,
+    "sizeKB": 266.1,
+    "shared": false,
+    "sourceNames": []
+  },
+  {
+    "name": "PINN Limitations and Mitigations in Additive Manuf",
+    "emoji": "",
+    "category": "Defense Tech",
+    "created": "Unknown",
+    "lastViewed": "Unknown",
+    "createdFull": "",
+    "sources": 5,
+    "artifacts": 0,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 32,
+    "sizeKB": 2144.9,
+    "shared": false,
+    "sourceNames": [
+      "OutPaceJ4WhitePaper.docx",
+      "END TOPIC 4 Rapid Certification.txt",
+      "Key Insights on PINN Limitations.txt",
+      "PINNs failures in thin walls.txt",
+      "001-NBLM_USER_CHAT_DOC.md"
+    ]
+  },
+  {
+    "name": "RFID Strategic Audit and Spectrum Defense Plan",
+    "emoji": "",
+    "category": "Defense",
+    "created": "Unknown",
+    "lastViewed": "Unknown",
+    "createdFull": "",
+    "sources": 10,
+    "artifacts": 0,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 28,
+    "sizeKB": 32672.8,
+    "shared": false,
+    "sourceNames": [
+      "OUSW A&S - ASWS - Logistics.pdf",
+      "DoD_FY23_Agency_Financial_Report.pdf",
+      "01-NBLM_USER_CHAT_DOC.md",
+      "Forensic Audit of DLA Data.pdf",
+      "Spectrum_Defense_Assets.docx",
+      "Volume2Change13Files.pdf",
+      "DLA Audit Remediation Strategy.pdf",
+      "MIL-STD-129PCH4.pdf",
+      "Google-Sources.txt",
+      "Perplexity-Sources.txt"
+    ]
+  },
+  {
+    "name": "Rob Fekete \u2014 Operational Profile",
+    "emoji": "\ud83e\udee1",
+    "category": "Career/Personal",
+    "created": "2026-03-22",
+    "lastViewed": "2026-03-24",
+    "createdFull": "2026-03-22T00:30:27.744101Z",
+    "sources": 10,
+    "artifacts": 0,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 54,
+    "sizeKB": 4106.3,
+    "shared": false,
+    "sourceNames": [
+      "Analysis_of_Robs_Voice.md",
+      "Disruptors Handbook.docx",
+      "Source_Categorization.txt",
+      "OutPace_Business_Solutions_Profile.md",
+      "00 Rob Baseline Draft",
+      "Rob_Leadership_Expectations.md",
+      "Rob_Fekete_Profile.md",
+      "Rob_USAF_Career_Summary.md",
+      "ROLE & PURPOSE.txt",
+      "1. ROLE & MISSION.txt"
+    ]
+  },
+  {
+    "name": "Rob USAF Career Docs",
+    "emoji": "\ud83c\udf96\ufe0f",
+    "category": "Career/Personal",
+    "created": "2026-03-05",
+    "lastViewed": "2026-03-22",
+    "createdFull": "2026-03-05T22:17:18.445580Z",
+    "sources": 18,
+    "artifacts": 2,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 70,
+    "sizeKB": 183314.2,
+    "shared": false,
+    "sourceNames": [
+      "AFIT_GRP _FEKETE_2020.md",
+      "FEKETE_DECORATIONS_AWARDS.md",
+      "FEKETE_OPRs_2011-2016.md",
+      "FEKETE_RANK_SERVICE_DATES.md",
+      "FEKETE_OPBs_2023-2024.md",
+      "FEKETE_OPRs_2006-2011.md",
+      "FEKETE _RACK.md",
+      "FEKETE_OPRs_2015-2021.md",
+      "FEKETE_TRAINING_PD.md",
+      "FEKETE_BSM_RECOMMENDATION.md",
+      "FEKETE_VA_DISABILITY_BENEFITS.md",
+      "FEKETE_DD214_OFFICER_RETIREMENT.md",
+      "FEKETE_DD214_ENLISTED.md",
+      "FEKETE_PERFORMANCE _HISTORY.md",
+      "FEKETE_RETIREMENT_SEPARATION_DATA.md",
+      "FEKETE_EPRs_2000-2005.md",
+      "FEKETE_TDY_DEPLOYMENT_HISTORY.md",
+      "FEKETE_PROFESSIONAL_CERTIFICATIONS.md"
+    ]
+  },
+  {
+    "name": "SAPAC Automation and Consultant Rate Analysis",
+    "emoji": "",
+    "category": "Gov Opportunities",
+    "created": "Unknown",
+    "lastViewed": "Unknown",
+    "createdFull": "",
+    "sources": 7,
+    "artifacts": 0,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 38,
+    "sizeKB": 1333.8,
+    "shared": false,
+    "sourceNames": [
+      "25-09-12-SAPAC-OPS-transcript.txt",
+      "25-07-01-SAPAC-Short-Fuse-SAR.txt",
+      "GovCon_Rate_Justification.md",
+      "Draft Proposal",
+      "25-12-19-SAPAC-Signed-transcript.txt",
+      "25-08-01-Matt-SAP-AC-Pre-Tinker.txt",
+      "001-NBLM_USER_CHAT_DOC.md"
+    ]
+  },
+  {
+    "name": "SAPAC Opportunity Identification and Automation St",
+    "emoji": "",
+    "category": "Gov Opportunities",
+    "created": "Unknown",
+    "lastViewed": "Unknown",
+    "createdFull": "",
+    "sources": 2,
+    "artifacts": 0,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 15,
+    "sizeKB": 442.3,
+    "shared": false,
+    "sourceNames": [
+      "Proposal Structured.txt",
+      "GSA MAS ceiling rates.txt"
+    ]
+  },
+  {
+    "name": "SDD Backend Architecture",
+    "emoji": "\ud83d\udee1\ufe0f",
+    "category": "Spec-Driven Dev",
+    "created": "2026-02-28",
+    "lastViewed": "2026-02-28",
+    "createdFull": "2026-02-28T01:18:13.151003Z",
+    "sources": 8,
+    "artifacts": 2,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 44,
+    "sizeKB": 167372.9,
+    "shared": false,
+    "sourceNames": [
+      "Backend_Architecture _DeepSeek.txt",
+      "Backend_Architecture _YouDR.txt",
+      "Backend_Architecture _KimiK2.txt",
+      "Backend_Architecture _Unk.txt",
+      "Backend_Architecture _GlobalGPT.txt",
+      "Backend_Architecture _GLM.txt",
+      "Backend_Architecture _Qwen.txt",
+      "Backend_Architecture _MSCopilot.txt"
+    ]
+  },
+  {
+    "name": "SDD Cloud Deployment & OAuth",
+    "emoji": "\ud83d\udee1\ufe0f",
+    "category": "Spec-Driven Dev",
+    "created": "2026-02-28",
+    "lastViewed": "2026-02-28",
+    "createdFull": "2026-02-28T01:16:45.130884Z",
+    "sources": 7,
+    "artifacts": 2,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 41,
+    "sizeKB": 171002.1,
+    "shared": false,
+    "sourceNames": [
+      "Cloud_Deploy_OAuth _Qwen.txt",
+      "Cloud_Deploy_OAuth _GlobalGPT.txt",
+      "Cloud_Deploy_OAuth _YouDR.txt",
+      "Cloud_Deploy_OAuth _GitHubCopilot.txt",
+      "Cloud_Deploy_OAuth _KimiK2.txt",
+      "Cloud_Deploy_OAuth _GLM.txt",
+      "Cloud_Deploy_OAuth _DeepSeek.txt"
+    ]
+  },
+  {
+    "name": "SDD Context Graph",
+    "emoji": "\ud83d\udee1\ufe0f",
+    "category": "Spec-Driven Dev",
+    "created": "2026-02-28",
+    "lastViewed": "2026-02-28",
+    "createdFull": "2026-02-28T01:37:05.607102Z",
+    "sources": 6,
+    "artifacts": 1,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 36,
+    "sizeKB": 206001.5,
+    "shared": false,
+    "sourceNames": [
+      "Context_Graph_YouDR.txt",
+      "Context_Graph_DeepSeek.txt",
+      "Context_Graph_KimiK2.txt",
+      "Context_Graph_MSCopilot.txt",
+      "Context_Graph_GLM.txt",
+      "Context_Graph_GlobalGPT.txt"
+    ]
+  },
+  {
+    "name": "SDD Database Schema & Routing",
+    "emoji": "\ud83d\udee1\ufe0f",
+    "category": "Spec-Driven Dev",
+    "created": "2026-02-27",
+    "lastViewed": "2026-02-28",
+    "createdFull": "2026-02-27T23:23:50.974254Z",
+    "sources": 5,
+    "artifacts": 1,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 38,
+    "sizeKB": 132314.8,
+    "shared": false,
+    "sourceNames": [
+      "SDD_TREE.md",
+      "Database_Schema_Routing_Patch_Set_1",
+      "Database_Schema_Routing_Patch_Set_2",
+      "Database_Schema_Routing_Baseline",
+      "sdd-templates.md"
+    ]
+  },
+  {
+    "name": "SDD Decision Trace",
+    "emoji": "\ud83d\udcdc",
+    "category": "Spec-Driven Dev",
+    "created": "2026-02-28",
+    "lastViewed": "2026-02-28",
+    "createdFull": "2026-02-28T02:12:13.931184Z",
+    "sources": 7,
+    "artifacts": 1,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 41,
+    "sizeKB": 198752.1,
+    "shared": false,
+    "sourceNames": [
+      "Decision_Trace_DeepSeek.txt",
+      "Decision_Trace_Qwen.txt",
+      "Decision_Trace_YouDR.txt",
+      "Decision_Trace_GitHubCopilot.txt",
+      "Decision_Trace_GLM.txt",
+      "Decision_Trace_GlobalGPT.txt",
+      "Decision_Trace_KimiK2.txt"
+    ]
+  },
+  {
+    "name": "SDD Fail-Fast Observability Architecture",
+    "emoji": "",
+    "category": "Spec-Driven Dev",
+    "created": "Unknown",
+    "lastViewed": "Unknown",
+    "createdFull": "",
+    "sources": 6,
+    "artifacts": 2,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 36,
+    "sizeKB": 164589.8,
+    "shared": false,
+    "sourceNames": [
+      "Fail_Fast_Loud_GlobalGPT.txt",
+      "Fail_Fast_Loud_KimiK2.txt",
+      "Fail_Fast_Loud_GLM.txt",
+      "Fail_Fast_Loud_YouDR.txt",
+      "Fail_Fast_Loud_MSCopilot.txt",
+      "Fail_Fast_Loud_DeepSeek.txt"
+    ]
+  },
+  {
+    "name": "SDD Frontend Architecture",
+    "emoji": "\ud83d\udee1\ufe0f",
+    "category": "Spec-Driven Dev",
+    "created": "2026-02-28",
+    "lastViewed": "2026-02-28",
+    "createdFull": "2026-02-28T01:17:33.736291Z",
+    "sources": 5,
+    "artifacts": 2,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 34,
+    "sizeKB": 187735.5,
+    "shared": false,
+    "sourceNames": [
+      "Frontend_Architecture _YouDR.txt",
+      "Frontend_Architecture _GlobalGPT.txt",
+      "Frontend_Architecture_KimiK2.txt",
+      "Frontend_Architecture_DeepSeek.txt",
+      "Frontend_Architecture _GLM.txt"
+    ]
+  },
+  {
+    "name": "SDD LLM & RAG  Integration",
+    "emoji": "\ud83d\udcdc",
+    "category": "Spec-Driven Dev",
+    "created": "2026-02-28",
+    "lastViewed": "2026-02-28",
+    "createdFull": "2026-02-28T01:16:02.375957Z",
+    "sources": 6,
+    "artifacts": 2,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 36,
+    "sizeKB": 140548.7,
+    "shared": false,
+    "sourceNames": [
+      "LLM_RAG_ Integrate_YouDR.txt",
+      "LLM_RAG_ Integrate_DeepSeek.txt",
+      "LLM_RAG_ Integrate_KimiK2.txt",
+      "LLM_RAG_ Integrate_GLM.txt",
+      "LLM_RAG_ Integrate_MSCopilot.txt",
+      "LLM_RAG_ Integrate_GlobalGPT.txt"
+    ]
+  },
+  {
+    "name": "SDD Multi-Prompt Returns",
+    "emoji": "\ud83d\udcdc",
+    "category": "Spec-Driven Dev",
+    "created": "2026-02-28",
+    "lastViewed": "2026-02-28",
+    "createdFull": "2026-02-28T01:14:56.610217Z",
+    "sources": 3,
+    "artifacts": 0,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 15,
+    "sizeKB": 235.9,
+    "shared": false,
+    "sourceNames": [
+      "SDD_Return_Perplexity.md",
+      "SDD_Return_11-13_YouDR.md",
+      "SDD_Return_11-13_Qwen.md"
+    ]
+  },
+  {
+    "name": "SDD NIST Standards",
+    "emoji": "\ud83d\udee1\ufe0f",
+    "category": "Spec-Driven Dev",
+    "created": "2026-02-28",
+    "lastViewed": "2026-02-28",
+    "createdFull": "2026-02-28T01:18:59.474941Z",
+    "sources": 7,
+    "artifacts": 2,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 39,
+    "sizeKB": 178427.9,
+    "shared": false,
+    "sourceNames": [
+      "NIST_STANDARD_YouDR.txt",
+      "NIST_STANDARD_GLM.txt",
+      "NIST_STANDARD_MSCopilot.txt",
+      "NIST_STANDARD_Qwen.txt",
+      "NIST_STANDARD_DeepSeek.txt",
+      "NIST_STANDARD_KimiK2.txt",
+      "NIST_STANDARD_GlobalGPT.txt"
+    ]
+  },
+  {
+    "name": "SDD Provenance",
+    "emoji": "\ud83d\udee1\ufe0f",
+    "category": "Spec-Driven Dev",
+    "created": "2026-02-28",
+    "lastViewed": "2026-02-28",
+    "createdFull": "2026-02-28T01:20:41.545995Z",
+    "sources": 13,
+    "artifacts": 2,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 54,
+    "sizeKB": 176155.5,
+    "shared": false,
+    "sourceNames": [
+      "Provenance_YouDR.txt",
+      "Regression_Guards_Qwen.txt",
+      "Regression_Guards_GLM.txt",
+      "Regression_Guards_KimiK2.txt",
+      "Regression_Guards_MSCopilot.txt",
+      "Provenance_MSCopilot.txt",
+      "Provenance_Qwen.txt",
+      "Provenance_KimiK2.txt",
+      "Regression_Guards_GlobalGPT.txt",
+      "Regression_Guards_YouDR.txt",
+      "Provenance_GLM.txt",
+      "Provenance_DeepSeek.txt",
+      "Regression_Guards_DeepSeek.txt"
+    ]
+  },
+  {
+    "name": "SDD Standard Work & Doctrine",
+    "emoji": "\ud83c\udfaf",
+    "category": "Spec-Driven Dev",
+    "created": "2026-02-27",
+    "lastViewed": "2026-02-28",
+    "createdFull": "2026-02-27T19:23:45.831632Z",
+    "sources": 23,
+    "artifacts": 0,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 50,
+    "sizeKB": 836.3,
+    "shared": false,
+    "sourceNames": [
+      "26-01-05_HARNESS_INFO_P00_Q00.md",
+      "AC3I_STANDARD_TEST_PLAN.txt",
+      "05-COMREL.md",
+      "Perplexity2_Workflow_Review_2.md",
+      "CLAUDE_CODE_HOOKS.txt",
+      "AC3I_STANDARD_TEST_PLAN_notes.txt",
+      "SPEC_VALIDATION_RUBRIC_v2.1.md",
+      "Perplexity2_Workflow_Review_4.md",
+      "26-01-02-AC3I-BACKLOG.md",
+      "Perplexity2_Workflow_Review_1.md",
+      "26-01-02-AC3I-SEAL.md",
+      "26-01-02-AC3I-HANDOFF.md",
+      "REPO_AUDIT_EXAMPLE.md",
+      "03-CONCERNS_DOCTRINE.md",
+      "000-NBLM_USER_CHAT_DOC_v3.0.md",
+      "FAILURE_PATTERS_CURSOR.md",
+      "DESIGN_OS_INSTALLATION_WORKFLOW.md",
+      "26-01-02-AC3I-MASTER-RUBRIC.md",
+      "Perplexity2_Workflow_Review_3.md",
+      "26-01-02-AC3I-STANDARD-WORK.md",
+      "FAIL_LOUD_HARDENING.md",
+      "Perplexity2_Workflow_Review_5.md",
+      "04-FAILURE_PATTERNS_1.md"
+    ]
+  },
+  {
+    "name": "SDD Test & Validation",
+    "emoji": "\ud83d\udee1\ufe0f",
+    "category": "Spec-Driven Dev",
+    "created": "2026-02-28",
+    "lastViewed": "2026-02-28",
+    "createdFull": "2026-02-28T01:11:42.686376Z",
+    "sources": 6,
+    "artifacts": 2,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 42,
+    "sizeKB": 149773.9,
+    "shared": false,
+    "sourceNames": [
+      "Test_Validation_GLM.md",
+      "Test_Validation_Grok.md",
+      "Test_Validation_GlobalGPT.md",
+      "Test_Validation_DeepSeek.md",
+      "Test_Validation_MSCopilot.md",
+      "Test_Validation_KimiK2.md"
+    ]
+  },
+  {
+    "name": "SES Strategy",
+    "emoji": "\ud83d\udef0\ufe0f",
+    "category": "Gov Opportunities",
+    "created": "2025-12-30",
+    "lastViewed": "2026-01-08",
+    "createdFull": "2025-12-30T18:47:11.836201Z",
+    "sources": 2,
+    "artifacts": 1,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 48,
+    "sizeKB": 8492.3,
+    "shared": true,
+    "sourceNames": [
+      "Elara-Nova-Market-Research.md",
+      "SES-Strategy-Final.md"
+    ]
+  },
+  {
+    "name": "SITE 525 Acquisition Playbook for Muscatatuck Trai",
+    "emoji": "",
+    "category": "Gov Opportunities",
+    "created": "Unknown",
+    "lastViewed": "Unknown",
+    "createdFull": "",
+    "sources": 31,
+    "artifacts": 0,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 141,
+    "sizeKB": 56434.7,
+    "shared": false,
+    "sourceNames": [
+      "Mark_Johnson_Profile.md",
+      "Container_Fitment_Analysis.docx",
+      "Abbi_Johnson_Profile.md",
+      "Baseline_Context_About_Rob.md",
+      "Fitment-Algorithm.txt",
+      "Consulting-Client-Acquisition.md",
+      "About - J4 Solutions",
+      "J4SG-NotebookLM-Overview.pptx",
+      "J4SG 26 CAPTURE STRATEGY.txt",
+      "SITE_525_Website.txt",
+      "CONTRACTOR BATTLE RHYTHM.txt",
+      "POWER_DYNAMIC_ABBI_JOHNSON.md",
+      "26-02-14-MGJ-Abbi-OTA-Texts.txt",
+      "JD_Signal_Continuous_Thread.md",
+      "Major General MARK K. JOHNSON",
+      "Rob-SBIR-Blog-Post.docx",
+      "Loglines July-August 2018.pdf - DLA",
+      "Capture 101 Overview.txt",
+      "page-2026-03-23-22-02-13.md",
+      "26-02-13-14-MGJ-Abbi-OTA-Texts.txt",
+      "001-NBLM_USER_CHAT_DOC.md",
+      "Defense Logistics Agency - DLA",
+      "Connie_Davis_Combined_Profile.md",
+      "Partner-Finder-Guide.md",
+      "J4_Solutions_Group_Profile.MD",
+      "26-02-09-J4-OTA-Pitch-transcript.txt",
+      "JD_Signal_Text_Overlapping.txt",
+      "Bishop-Screenshot-Binder.pdf",
+      "AMJ_Consulting_LLC_Profile.md",
+      "Relationship_Intel_Abbi_Johnson.md",
+      "COLD OUTREACH FOR GOV CONTRACTORS.txt"
+    ]
+  },
+  {
+    "name": "SOS Opportunity Triage v4.3",
+    "emoji": "\ud83d\udcd1",
+    "category": "Other",
+    "created": "2025-10-29",
+    "lastViewed": "2026-01-20",
+    "createdFull": "2025-10-29T20:45:58.055771Z",
+    "sources": 5,
+    "artifacts": 0,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 18,
+    "sizeKB": 729.4,
+    "shared": false,
+    "sourceNames": [
+      "06_SOS_USER_CHAT_DOC.md",
+      "05_SOS_NOT_DISQUALIFIERS.md",
+      "N0002326R0001-Binder.pdf",
+      "02_SOS_JSON_Output_Spec_NBLM_v4_3.md",
+      "03_SOS_AMC_AMSC_BID_MATRIX_v4_3.md"
+    ]
+  },
+  {
+    "name": "Scribd Construction Estimating and Bill of Materia",
+    "emoji": "",
+    "category": "Other",
+    "created": "Unknown",
+    "lastViewed": "Unknown",
+    "createdFull": "",
+    "sources": 6,
+    "artifacts": 0,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 14,
+    "sizeKB": 1652.7,
+    "shared": false,
+    "sourceNames": [
+      "Scribd-Pratt-Whitney.txt",
+      "Scribd-Acft-Parts.txt",
+      "THE-PLAY.md",
+      "Scribd-IPC.txt",
+      "Scribd-GE.txt",
+      "User_Chat_Doc.md"
+    ]
+  },
+  {
+    "name": "SneakyPrompt_ RL-based Jailbreaking for Text-to-Im",
+    "emoji": "",
+    "category": "AI/ML",
+    "created": "Unknown",
+    "lastViewed": "Unknown",
+    "createdFull": "",
+    "sources": 18,
+    "artifacts": 1,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 65,
+    "sizeKB": 243984.8,
+    "shared": false,
+    "sourceNames": [
+      "evaluation_and_risks.md",
+      "result_ghostprompt_paper.md",
+      "result_atlas_jailbreak.md",
+      "all_paper_analyses.md",
+      "result_chain_of_jailbreak.md",
+      "result_automatic_jailbreak.md",
+      "memory_vulnerability.pdf",
+      "sneakyprompt_paper.pdf",
+      "technical_details.md",
+      "result_sneakyprompt_paper.md",
+      "icer_redteaming.pdf",
+      "chain_of_jailbreak.pdf",
+      "ghostprompt_paper.pdf",
+      "result_icer_redteaming.md",
+      "result_memory_vulnerability.md",
+      "atlas_jailbreak.pdf",
+      "defense_mechanisms_details.md",
+      "2505.18979v1.pdf"
+    ]
+  },
+  {
+    "name": "Solid Rocket Motor Industrial Base Expansion",
+    "emoji": "",
+    "category": "Defense Tech",
+    "created": "Unknown",
+    "lastViewed": "Unknown",
+    "createdFull": "",
+    "sources": 4,
+    "artifacts": 0,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 33,
+    "sizeKB": 22080.2,
+    "shared": false,
+    "sourceNames": [
+      "GovCon-Market-Entry-Framework.pdf",
+      "JGA_JGMS_KIN-24-02-WP_12JUN2024.pdf",
+      "Email_12-2-25_MQ_to_OPS_FW_ JGA.pdf",
+      "Email_12-1-25_OPS__to_MQ_ FW_ JGA.pdf"
+    ]
+  },
+  {
+    "name": "Strategic Advisor_ OutPace",
+    "emoji": "\ud83d\udef0\ufe0f",
+    "category": "OutPace",
+    "created": "2026-01-27",
+    "lastViewed": "2026-02-09",
+    "createdFull": "2026-01-27T15:34:12.784005Z",
+    "sources": 8,
+    "artifacts": 0,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 31,
+    "sizeKB": 107159.4,
+    "shared": false,
+    "sourceNames": [
+      "02-NBLM_RESET_DOC.md",
+      "Aalyria-Research-Binder.pdf",
+      "01-NBLM_USER_CHAT_DOC.md",
+      "FA8652-26-R-0001-Binder.pdf",
+      "THE-PLAY.md",
+      "Fekete_Combined_Documentation.md",
+      "SOS Triage Assessor v4.4.txt",
+      "Aalyria-Awards-Binder.pdf"
+    ]
+  },
+  {
+    "name": "Strategic Alignment and Digital Evidence Governanc",
+    "emoji": "",
+    "category": "Other",
+    "created": "Unknown",
+    "lastViewed": "Unknown",
+    "createdFull": "",
+    "sources": 28,
+    "artifacts": 10,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 293,
+    "sizeKB": 401350.4,
+    "shared": false,
+    "sourceNames": [
+      "END TOPIC 4 Rapid Certification.txt",
+      "DRAFT_SPEC.md",
+      "PRD.txt",
+      "MASTER INDEX MSFC-SPEC-3717.txt",
+      "MASTER INDEX MIL-STD-1587F.txt",
+      "MASTER INDEX AMF.txt",
+      "MASTER INDEX EASA CM-S-008.txt",
+      "000 END 3D_Printing_the_B-52.txt",
+      "GovCloud  Deployment Plan.txt",
+      "000 TRAPS_OVER_THE_TOP.txt",
+      "DEMO_SCREENSHOTS_1.pdf",
+      "MASTER AM FILE FORMAT.txt",
+      "00 DATA_SET_NAMES_2.txt",
+      "MASTER INDEX DAFGM2020-63-149-01.txt",
+      "MASTER INDEX EZ Series.txt",
+      "NDAA-Language.txt",
+      "MASTER INDEX MIL-STD-31000C.txt",
+      "MASTER INDEX MSFC-STD-3716.txt",
+      "Solo Developer Execution Plan.txt",
+      "MASTER INDEX NDAA.txt",
+      "DATASET_SCREENSHOTS_2.pdf",
+      "MASTER INDEX MIL-STD-1798D.txt",
+      "DATASET_SCREENSHOTS_3.pdf",
+      "DATASET_SCREENSHOTS_1.pdf",
+      "Topic 4 Technical Volume.txt",
+      "MASTER INDEX NASA-STD-6030.txt",
+      "USAF_WORDS_ON_NEW_FRAMEWORK.txt",
+      "00 DATA_SET_NAMES.txt"
+    ]
+  },
+  {
+    "name": "Strategic Intelligence Report for AFGSC Topic 4 Pr",
+    "emoji": "",
+    "category": "Defense",
+    "created": "Unknown",
+    "lastViewed": "Unknown",
+    "createdFull": "",
+    "sources": 0,
+    "artifacts": 0,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 21,
+    "sizeKB": 101741.5,
+    "shared": false,
+    "sourceNames": []
+  },
+  {
+    "name": "Strategic Market Pathways for Foreign Drone Techno",
+    "emoji": "",
+    "category": "Other",
+    "created": "Unknown",
+    "lastViewed": "Unknown",
+    "createdFull": "",
+    "sources": 0,
+    "artifacts": 0,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 8,
+    "sizeKB": 580.1,
+    "shared": false,
+    "sourceNames": []
+  },
+  {
+    "name": "Strategic-Advisor-OPS-GTM-Pipeline",
+    "emoji": "\ud83d\udd13",
+    "category": "Business Dev",
+    "created": "2026-01-28",
+    "lastViewed": "2026-01-30",
+    "createdFull": "2026-01-28T19:03:43.877435Z",
+    "sources": 6,
+    "artifacts": 0,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 16,
+    "sizeKB": 861.2,
+    "shared": false,
+    "sourceNames": [
+      "26-01-28-Thread-GPT-Pipeline-2.txt",
+      "Claude-Agent-SOS-Convo.txt",
+      "26-01-28-Thread-GPT-Pipeline.txt",
+      "GET-MY-SHIT-TOGETHER.md",
+      "01-NBLM_USER_CHAT_DOC.md",
+      "26-01-28-Pipeline-Reconciliation.txt"
+    ]
+  },
+  {
+    "name": "Systematic AI Development and Orchestration Framew",
+    "emoji": "",
+    "category": "AI/ML",
+    "created": "Unknown",
+    "lastViewed": "Unknown",
+    "createdFull": "",
+    "sources": 1,
+    "artifacts": 1,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 8,
+    "sizeKB": 15582.9,
+    "shared": false,
+    "sourceNames": [
+      "01-NBLM_HUMAN_CHAT.md"
+    ]
+  },
+  {
+    "name": "Systems Engineering_ Integration Patterns and Atom",
+    "emoji": "",
+    "category": "Other",
+    "created": "Unknown",
+    "lastViewed": "Unknown",
+    "createdFull": "",
+    "sources": 0,
+    "artifacts": 0,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 24,
+    "sizeKB": 300.4,
+    "shared": false,
+    "sourceNames": []
+  },
+  {
+    "name": "Test Planning and Governance Artifacts",
+    "emoji": "",
+    "category": "Other",
+    "created": "Unknown",
+    "lastViewed": "Unknown",
+    "createdFull": "",
+    "sources": 30,
+    "artifacts": 1,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 65,
+    "sizeKB": 92567.7,
+    "shared": false,
+    "sourceNames": [
+      "26-01-02-AC3I-STANDARD-WORK.md",
+      "26-01-02-AC3I-SEAL.md",
+      "03-CONCERNS_DOCTRINE.md",
+      "26-02-11-Monte-Carlo-Sims-Draft-1.txt",
+      "IDE-Test-Plan-Dev-Grok.txt",
+      "26-01-02-AC3I-MASTER-RUBRIC.md",
+      "IDE-Test-Plan-Dev-Qwen.md",
+      "NotebookLMDeveloperUsage_GPT.md",
+      "FAIL_LOUD_HARDENING.md",
+      "FAILURE_PATTERS_CURSOR.md",
+      "04-FAILURE_PATTERNS_1.md",
+      "IDE-Test-Plan-Dev-Global.txt",
+      "AC3I_STANDARD_TEST_PLAN.txt",
+      "IDE-Test-Plan-Dev-DeepSeek.txt",
+      "IDE-Test-Plan-Dev-KimiK2.md",
+      "IDE-Test-Plan-Dev-Gemini.md",
+      "GPT-5.3 Codex Prompting Deep Dive.md",
+      "MASTER_TEST_PLAN_DRAFT_2.txt",
+      "NotebookLMDeveloperUsage_Gemini.md",
+      "001-NBLM_USER_CHAT_DOC.md",
+      "IDE-Test-Plan-Dev-Manus.md",
+      "OTA-App-Test-Plan-Draft-1.txt",
+      "NotebookLMDeveloperUsage_Manus.md",
+      "NotebookLMDeveloperUsage_YouARI.md",
+      "05-COMREL.md",
+      "SPEC_VALIDATION_RUBRIC_v2.1.md",
+      "IDE-Test-Plan-Dev-Mistral.txt",
+      "02-USER.md",
+      "IDE-Test-Plan-Dev-Perplexity.md",
+      "26-01-02-AC3I-HANDOFF.md"
+    ]
+  },
+  {
+    "name": "The Architect of the GovCon Kill-Web",
+    "emoji": "\u265f\ufe0f",
+    "category": "Other",
+    "created": "2026-02-19",
+    "lastViewed": "2026-02-19",
+    "createdFull": "2026-02-19T00:51:03.469337Z",
+    "sources": 11,
+    "artifacts": 0,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 49,
+    "sizeKB": 87140.3,
+    "shared": false,
+    "sourceNames": [
+      "26-02-13-Abbi-AFGSC-OTA-Texts.png",
+      "SBBC_EVAL_PORTAL.pdf",
+      "26-02-13-14-MGJ-Abbi-OTA-Texts.txt",
+      "OTA_CONS_CALL-transcript.txt",
+      "OutPaceJ4QuadChart.pdf",
+      "END TOPIC 4 Rapid Certification.txt",
+      "26-02-14-Abbi-MGJ-Texts.png",
+      "Gemini-Deep-Think-Thread-OTA.txt",
+      "26-02-14-MGJ-Abbi-OTA-Texts.txt",
+      "OutPaceJ4WhitePaper.docx",
+      "RCUF_Build_Manifest.md"
+    ]
+  },
+  {
+    "name": "The Architect_s Ledger_ Forensic Benchmarks of AI ",
+    "emoji": "",
+    "category": "AI/ML",
+    "created": "Unknown",
+    "lastViewed": "Unknown",
+    "createdFull": "",
+    "sources": 18,
+    "artifacts": 3,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 103,
+    "sizeKB": 239164.2,
+    "shared": false,
+    "sourceNames": [
+      "Fekete_OPRs_2015-2021.md",
+      "USER AI CLAIMS.txt",
+      "Fekete_OPRs_2011-2016.md",
+      "Rob_year_with_GPT.pdf",
+      "01-NBLM_USER_CHAT_DOC.md",
+      "Fekete_EPRs_2000-2005.md",
+      "04-FAILURE_PATTERNS_1.md",
+      "03-CONCERNS_DOCTRINE.md",
+      "J4-Solutions-Group-BMG-GTM.pdf",
+      "Your_Year_with_ChatGPT_Screenshots.md",
+      "OutPace-NSN-Matching-Overview.pdf",
+      "26-01-02-AC3I-MASTER-RUBRIC.md",
+      "SOS Triage Assessor v4.4.txt",
+      "05-COMREL.md",
+      "Fekete_OPRs_2006-2011.md",
+      "Fekete_OPBs_2023-2024.md",
+      "Perplexity_AI_Benchmark_images.pdf",
+      "02-USER.md"
+    ]
+  },
+  {
+    "name": "The Battle for Benefits_ VA Disability Policy and ",
+    "emoji": "",
+    "category": "VA/Benefits",
+    "created": "Unknown",
+    "lastViewed": "Unknown",
+    "createdFull": "",
+    "sources": 14,
+    "artifacts": 2,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 89,
+    "sizeKB": 395623.8,
+    "shared": false,
+    "sourceNames": [
+      "VA Disability Benefits Deep Dive.docx",
+      "section_3_morbidity_qalys.md",
+      "PROJECT_2025_DEPT_VA.pdf",
+      "quick_reference_statistics.md",
+      "2026-03068.pdf",
+      "Veteran Mortality Analysis.docx",
+      "section_2_cause_of_death.md",
+      "section_5_demographic_disparities.md",
+      "va_official_life_tables.md",
+      "executive_briefing.md",
+      "section_4_medication_burden.md",
+      "section_6_actuarial_economic.md",
+      "section_8_data_gaps.md",
+      "section_1_baseline_mortality.md"
+    ]
+  },
+  {
+    "name": "The ManBearPig Chronologies",
+    "emoji": "\ud83d\udc3b\u200d\u2744\ufe0f",
+    "category": "Creative",
+    "created": "2026-02-07",
+    "lastViewed": "2026-02-07",
+    "createdFull": "2026-02-07T19:00:32.658538Z",
+    "sources": 1,
+    "artifacts": 1,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 13,
+    "sizeKB": 176636.7,
+    "shared": false,
+    "sourceNames": [
+      "01-NBLM_PODCAST_CHAT.md"
+    ]
+  },
+  {
+    "name": "The OutPace Blueprint_ Strategic Reorganization an",
+    "emoji": "",
+    "category": "OutPace",
+    "created": "Unknown",
+    "lastViewed": "Unknown",
+    "createdFull": "",
+    "sources": 4,
+    "artifacts": 0,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 10,
+    "sizeKB": 177.7,
+    "shared": false,
+    "sourceNames": [
+      "600-tasks.txt",
+      "MASTER-ARTIFACT-Pipeline.txt",
+      "01-NBLM_USER_CHAT_DOC.md",
+      "GET-MY-SHIT-TOGETHER.md"
+    ]
+  },
+  {
+    "name": "The Rob.0 Deterministic Writing Engine Architectur",
+    "emoji": "",
+    "category": "Other",
+    "created": "Unknown",
+    "lastViewed": "Unknown",
+    "createdFull": "",
+    "sources": 5,
+    "artifacts": 0,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 34,
+    "sizeKB": 1824.5,
+    "shared": false,
+    "sourceNames": [
+      "ROLE & PURPOSE.txt",
+      "Fekete Declaration.pdf",
+      "ROB.md",
+      "1. ROLE & MISSION.txt",
+      "OPENCLAW_OVERVIEW.md"
+    ]
+  },
+  {
+    "name": "The Spec Kit Framework for Spec-Driven Development",
+    "emoji": "",
+    "category": "Other",
+    "created": "Unknown",
+    "lastViewed": "Unknown",
+    "createdFull": "",
+    "sources": 11,
+    "artifacts": 1,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 85,
+    "sizeKB": 142104.5,
+    "shared": false,
+    "sourceNames": [
+      "agentic_workflows_insights.md",
+      "Most_Trusted_Effective_Specs.md",
+      "State_of_SDD_March_2026.md",
+      "Most_Trusted_Specs.md",
+      "spec_driven_development_report.md",
+      "research_notes.md",
+      "Structure_of_Modern_Specs.md",
+      "jordan_knight_notes.md",
+      "Most_Trusted_Specs_SDD.md",
+      "Spec_Kit_GitHub_Amazon_Kiro.md",
+      "SDD_Practitioner_Guide.md"
+    ]
+  },
+  {
+    "name": "Transcript Repair",
+    "emoji": "\ud83e\uddd0",
+    "category": "Other",
+    "created": "2026-03-22",
+    "lastViewed": "2026-03-22",
+    "createdFull": "2026-03-22T12:58:16.411028Z",
+    "sources": 23,
+    "artifacts": 0,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 48,
+    "sizeKB": 462.6,
+    "shared": false,
+    "sourceNames": [
+      "page-2026-03-20-15-36-12.md",
+      "page-2026-03-20-15-39-37.md",
+      "page-2026-03-20-15-34-26.md",
+      "page-2026-03-20-15-33-42.md",
+      "CLAUDE.md",
+      "page-2026-03-20-15-31-31.md",
+      "page-2026-03-20-15-35-25.md",
+      "NOTEBOOK_ADJUSTMENT_NOTES.md",
+      "page-2026-03-20-15-34-59.md",
+      "page-2026-03-20-15-33-26.md",
+      "page-2026-03-20-15-31-46.md",
+      "26-03-22_GPT_Response.txt",
+      "page-2026-03-20-15-34-41.md",
+      "page-2026-03-20-15-34-00.md",
+      "page-2026-03-20-15-37-18.md",
+      "page-2026-03-20-15-36-24.md",
+      "page-2026-03-20-15-35-40.md",
+      "TRANSCRIPT_DISPATCH_PROCEDURE.md",
+      "page-2026-03-20-15-36-39.md",
+      "26-03-22_Gemini_Response.txt",
+      "page-2026-03-20-15-36-53.md",
+      "26-03-22_Claude_Response.txt",
+      "page-2026-03-20-15-36-00.md"
+    ]
+  },
+  {
+    "name": "UI_ Tactical Aerospace Component Library and Revie",
+    "emoji": "",
+    "category": "Other",
+    "created": "Unknown",
+    "lastViewed": "Unknown",
+    "createdFull": "",
+    "sources": 8,
+    "artifacts": 0,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 34,
+    "sizeKB": 488.7,
+    "shared": false,
+    "sourceNames": [
+      "Grok-UI-1.txt",
+      "Gemini-UI-1.txt",
+      "Grok-UI-2.txt",
+      "KimiK2-UI-2.txt",
+      "Mistral-UI-2.txt",
+      "KimiK2-UI-1.txt",
+      "chat.md",
+      "Gemini-UI-2.txt"
+    ]
+  },
+  {
+    "name": "Unified Command Center - API References",
+    "emoji": "",
+    "category": "Other",
+    "created": "Unknown",
+    "lastViewed": "Unknown",
+    "createdFull": "",
+    "sources": 1,
+    "artifacts": 0,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 5,
+    "sizeKB": 55.1,
+    "shared": false,
+    "sourceNames": [
+      "Gmail API | Google for Developers"
+    ]
+  },
+  {
+    "name": "Unified Command Center - Architecture",
+    "emoji": "\ud83d\udd79\ufe0f",
+    "category": "Other",
+    "created": "2026-03-12",
+    "lastViewed": "2026-03-13",
+    "createdFull": "2026-03-12T21:47:06.842966Z",
+    "sources": 2,
+    "artifacts": 0,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 6,
+    "sizeKB": 5.2,
+    "shared": false,
+    "sourceNames": [
+      "REQUIREMENTS.md",
+      "PROJECT.md"
+    ]
+  },
+  {
+    "name": "Unified Command Center - Triage Patterns",
+    "emoji": "",
+    "category": "Other",
+    "created": "Unknown",
+    "lastViewed": "Unknown",
+    "createdFull": "",
+    "sources": 0,
+    "artifacts": 0,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 1,
+    "sizeKB": 1.5,
+    "shared": false,
+    "sourceNames": []
+  },
+  {
+    "name": "Universal Agentic Harness and Claude Plugin Market",
+    "emoji": "",
+    "category": "AI/ML",
+    "created": "Unknown",
+    "lastViewed": "Unknown",
+    "createdFull": "",
+    "sources": 15,
+    "artifacts": 0,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 32,
+    "sizeKB": 7045.8,
+    "shared": false,
+    "sourceNames": [
+      "chunk_0013.txt",
+      "chunk_0006.txt",
+      "chunk_0003.txt",
+      "chunk_0012.txt",
+      "chunk_0009.txt",
+      "chunk_0014.txt",
+      "chunk_0007.txt",
+      "chunk_0001.txt",
+      "01-TASK.txt",
+      "chunk_0004.txt",
+      "chunk_0002.txt",
+      "chunk_0008.txt",
+      "chunk_0005.txt",
+      "chunk_0010.txt",
+      "chunk_0011.txt"
+    ]
+  },
+  {
+    "name": "VA Disability Rating Decision for Robert Fekete",
+    "emoji": "",
+    "category": "VA/Benefits",
+    "created": "Unknown",
+    "lastViewed": "Unknown",
+    "createdFull": "",
+    "sources": 5,
+    "artifacts": 0,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 14,
+    "sizeKB": 7090.9,
+    "shared": false,
+    "sourceNames": [
+      "ClaimLetter-2025-3-20.pdf",
+      "DBQ_INACCURATE_NARCO_FEKETE.pdf",
+      "Narcolepsy-Follow-Up-Binder.pdf",
+      "01-NBLM_USER_CHAT_DOC.md",
+      "DBQ_CORRECTION_BINDER.pdf"
+    ]
+  },
+  {
+    "name": "Wichita_ The Underutilized Aerospace Manufacturing",
+    "emoji": "",
+    "category": "Other",
+    "created": "Unknown",
+    "lastViewed": "Unknown",
+    "createdFull": "",
+    "sources": 1,
+    "artifacts": 0,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 8,
+    "sizeKB": 95.3,
+    "shared": false,
+    "sourceNames": [
+      "NIST-Checklists.docx"
+    ]
+  },
+  {
+    "name": "Wil Trugmann",
+    "emoji": "\ud83c\udfad",
+    "category": "Creative",
+    "created": "2026-02-25",
+    "lastViewed": "2026-02-26",
+    "createdFull": "2026-02-25T02:07:36.219940Z",
+    "sources": 55,
+    "artifacts": 3,
+    "chats": 0,
+    "notes": 0,
+    "fileCount": 131,
+    "sizeKB": 458033.5,
+    "shared": false,
+    "sourceNames": [
+      "IMG_1050.JPEG",
+      "IMG_1051.JPEG",
+      "Screenshot 2025-02-19 082905.png",
+      "Slide14-fotor-20260225114114.png",
+      "IMG_1045.JPEG",
+      "Slide17.PNG",
+      "Screenshot 2025-02-19 083201.png",
+      "Wil_Trugmann_Back Story.docx",
+      "IMG_1069.JPEG",
+      "Screenshot 2025-02-19 083045.png",
+      "Slide3-fotor-2026022511467.png",
+      "Slide10-fotor-2026022511387.png",
+      "Slide6.PNG",
+      "IMG_1038.JPEG",
+      "Slide9-fotor-20260225113812.png",
+      "Slide8-fotor-20260225114651.png",
+      "Screenshot 2025-02-19 082929.png",
+      "Slide7-fotor-20260225114643.png",
+      "IMG_1043.JPEG",
+      "Slide2-fotor-20260225114559.png",
+      "Slide2.PNG",
+      "Slide3.PNG",
+      "IMG_1037.JPEG",
+      "Slide0.png",
+      "Screenshot 2025-02-19 083133.png",
+      "Slide9.PNG",
+      "Slide1.PNG",
+      "Slide7.PNG",
+      "IMG_1049.JPEG",
+      "IMG_1046.JPEG",
+      "Slide8.PNG",
+      "Screenshot 2025-02-19 083028.png",
+      "Slide17-fotor-20260225114126.png",
+      "Screenshot 2025-02-19 083106.png",
+      "Slide10.PNG",
+      "Slide14.PNG",
+      "IMG_1036.PNG",
+      "Slide16-fotor-20260225114122.png",
+      "Screenshot 2025-02-19 092059.png",
+      "Screenshot 2025-02-19 082838.png",
+      "Screenshot 2025-02-19 083221.png",
+      "Slide1-fotor-20260225114551.png",
+      "Screenshot 2025-02-19 083644.png",
+      "Screenshot 2025-02-19 092042.png",
+      "Slide6-fotor-20260225114636.png",
+      "Slide17-fotor-2026022511285.png",
+      "Pre-Wil-FB-Thread-Malcome-Binder.pdf",
+      "IMG_1039.PNG",
+      "IMG_1044.JPEG",
+      "Slide4.PNG",
+      "IMG_1048.JPEG",
+      "IMG_1070.PNG",
+      "Slide0-fotor-20260225112616.png",
+      "Screenshot 2025-02-19 082949.png",
+      "Slide16.PNG"
+    ]
+  }
+];
+const catStats = [
+  {
+    "name": "AI/ML",
+    "count": 10,
+    "totalSize": 681075.5,
+    "totalSources": 144
+  },
+  {
+    "name": "Business Dev",
+    "count": 8,
+    "totalSize": 827119.2999999999,
+    "totalSources": 120
+  },
+  {
+    "name": "Career/Personal",
+    "count": 3,
+    "totalSize": 187536.40000000002,
+    "totalSources": 29
+  },
+  {
+    "name": "Creative",
+    "count": 2,
+    "totalSize": 634670.2,
+    "totalSources": 56
+  },
+  {
+    "name": "Defense",
+    "count": 13,
+    "totalSize": 823426.4000000001,
+    "totalSources": 109
+  },
+  {
+    "name": "Defense Tech",
+    "count": 3,
+    "totalSize": 26487.300000000003,
+    "totalSources": 30
+  },
+  {
+    "name": "Gov Opportunities",
+    "count": 4,
+    "totalSize": 66703.09999999999,
+    "totalSources": 42
+  },
+  {
+    "name": "Medical",
+    "count": 3,
+    "totalSize": 372288.0,
+    "totalSources": 79
+  },
+  {
+    "name": "NSN/Manufacturing",
+    "count": 23,
+    "totalSize": 1579781.1,
+    "totalSources": 244
+  },
+  {
+    "name": "NotebookLM",
+    "count": 4,
+    "totalSize": 403777.4,
+    "totalSources": 13
+  },
+  {
+    "name": "OpenClaw",
+    "count": 6,
+    "totalSize": 235467.80000000002,
+    "totalSources": 68
+  },
+  {
+    "name": "Other",
+    "count": 37,
+    "totalSize": 1825363.0000000002,
+    "totalSources": 336
+  },
+  {
+    "name": "OutPace",
+    "count": 8,
+    "totalSize": 588417.2999999999,
+    "totalSources": 40
+  },
+  {
+    "name": "Space/Orbital",
+    "count": 1,
+    "totalSize": 119482.6,
+    "totalSources": 27
+  },
+  {
+    "name": "Spec-Driven Dev",
+    "count": 13,
+    "totalSize": 1873746.8999999997,
+    "totalSources": 102
+  },
+  {
+    "name": "VA/Benefits",
+    "count": 2,
+    "totalSize": 402714.7,
+    "totalSources": 19
+  }
+];
+const timelineData = [
+  {
+    "date": "2025-10-26",
+    "name": "Meta-Prompt Creator",
+    "category": "AI/ML"
+  },
+  {
+    "date": "2025-10-29",
+    "name": "SOS Opportunity Triage v4.3",
+    "category": "Other"
+  },
+  {
+    "date": "2025-12-30",
+    "name": "SES Strategy",
+    "category": "Gov Opportunities"
+  },
+  {
+    "date": "2026-01-12",
+    "name": "B2B Dashboards SSOT",
+    "category": "Business Dev"
+  },
+  {
+    "date": "2026-01-18",
+    "name": "2-Distill-NSN-Mnfg",
+    "category": "NSN/Manufacturing"
+  },
+  {
+    "date": "2026-01-18",
+    "name": "4-Distill-NSN-Mnfg",
+    "category": "NSN/Manufacturing"
+  },
+  {
+    "date": "2026-01-18",
+    "name": "5-Distill-NSN-Mnfg",
+    "category": "NSN/Manufacturing"
+  },
+  {
+    "date": "2026-01-18",
+    "name": "6-Distill-NSN-Mnfg",
+    "category": "NSN/Manufacturing"
+  },
+  {
+    "date": "2026-01-18",
+    "name": "7-Distill-NSN-Mnfg",
+    "category": "NSN/Manufacturing"
+  },
+  {
+    "date": "2026-01-18",
+    "name": "8-Distill-NSN-Mnfg",
+    "category": "NSN/Manufacturing"
+  },
+  {
+    "date": "2026-01-18",
+    "name": "9-Distill-NSN-Mnfg",
+    "category": "NSN/Manufacturing"
+  },
+  {
+    "date": "2026-01-18",
+    "name": "AGENT-BGov-NSN-Mnfg",
+    "category": "NSN/Manufacturing"
+  },
+  {
+    "date": "2026-01-18",
+    "name": "AGENT-GovPurchase-NSN-Mnfg",
+    "category": "NSN/Manufacturing"
+  },
+  {
+    "date": "2026-01-18",
+    "name": "AGENT-HigherGov-NSN-Mnfg",
+    "category": "NSN/Manufacturing"
+  },
+  {
+    "date": "2026-01-19",
+    "name": "1-Distill-NSN-Mnfg",
+    "category": "NSN/Manufacturing"
+  },
+  {
+    "date": "2026-01-19",
+    "name": "10-Distill-NSN-Mnfg",
+    "category": "NSN/Manufacturing"
+  },
+  {
+    "date": "2026-01-19",
+    "name": "11-Distill-NSN-Mnfg",
+    "category": "NSN/Manufacturing"
+  },
+  {
+    "date": "2026-01-19",
+    "name": "3-Distill-NSN-Mnfg",
+    "category": "NSN/Manufacturing"
+  },
+  {
+    "date": "2026-01-19",
+    "name": "AGENT-GovWinIQ-NSN-Mnfg",
+    "category": "NSN/Manufacturing"
+  },
+  {
+    "date": "2026-01-19",
+    "name": "GovPurchase Validation and Comparison",
+    "category": "Other"
+  },
+  {
+    "date": "2026-01-19",
+    "name": "MASTER-Agent-NSN-Mnfg",
+    "category": "NSN/Manufacturing"
+  },
+  {
+    "date": "2026-01-20",
+    "name": "12-Distill-NSN-Mnfg",
+    "category": "NSN/Manufacturing"
+  },
+  {
+    "date": "2026-01-20",
+    "name": "AGENT-Aggregated-Distill-Sources",
+    "category": "NSN/Manufacturing"
+  },
+  {
+    "date": "2026-01-20",
+    "name": "Consolidated Appropriations Act 2026",
+    "category": "Other"
+  },
+  {
+    "date": "2026-01-20",
+    "name": "NIIN Database Validation",
+    "category": "Other"
+  },
+  {
+    "date": "2026-01-24",
+    "name": "1.5 Deduplicator",
+    "category": "Other"
+  },
+  {
+    "date": "2026-01-24",
+    "name": "DOC STRUCTURING 4_ Assembler",
+    "category": "Other"
+  },
+  {
+    "date": "2026-01-27",
+    "name": "CI-Agent-9 IC Confidence Standards",
+    "category": "NSN/Manufacturing"
+  },
+  {
+    "date": "2026-01-27",
+    "name": "Strategic Advisor_ OutPace",
+    "category": "OutPace"
+  },
+  {
+    "date": "2026-01-28",
+    "name": "Strategic-Advisor-OPS-GTM-Pipeline",
+    "category": "Business Dev"
+  },
+  {
+    "date": "2026-02-01",
+    "name": "OutPace - GTM",
+    "category": "OutPace"
+  },
+  {
+    "date": "2026-02-02",
+    "name": "DoD RMSC-Procurement",
+    "category": "Defense"
+  },
+  {
+    "date": "2026-02-02",
+    "name": "Influence Matrix",
+    "category": "Other"
+  },
+  {
+    "date": "2026-02-05",
+    "name": "OutPace OTA Planning Repository",
+    "category": "OutPace"
+  },
+  {
+    "date": "2026-02-07",
+    "name": "OpenClaw Ops",
+    "category": "OpenClaw"
+  },
+  {
+    "date": "2026-02-07",
+    "name": "The ManBearPig Chronologies",
+    "category": "Creative"
+  },
+  {
+    "date": "2026-02-08",
+    "name": "AFGSC-OTA-and-SHOWCASE",
+    "category": "Defense"
+  },
+  {
+    "date": "2026-02-10",
+    "name": "Development_ NotebookLM Workflows",
+    "category": "NotebookLM"
+  },
+  {
+    "date": "2026-02-19",
+    "name": "The Architect of the GovCon Kill-Web",
+    "category": "Other"
+  },
+  {
+    "date": "2026-02-21",
+    "name": "12 Cell Matrix",
+    "category": "Other"
+  },
+  {
+    "date": "2026-02-25",
+    "name": "Wil Trugmann",
+    "category": "Creative"
+  },
+  {
+    "date": "2026-02-27",
+    "name": "0 GLOC_ DLA DATA  NEXT",
+    "category": "NSN/Manufacturing"
+  },
+  {
+    "date": "2026-02-27",
+    "name": "Consensus_ Multi-Model AI Pipelines",
+    "category": "Business Dev"
+  },
+  {
+    "date": "2026-02-27",
+    "name": "SDD Database Schema & Routing",
+    "category": "Spec-Driven Dev"
+  },
+  {
+    "date": "2026-02-27",
+    "name": "SDD Standard Work & Doctrine",
+    "category": "Spec-Driven Dev"
+  },
+  {
+    "date": "2026-02-28",
+    "name": "OL_ Agentic Framework Landscape",
+    "category": "Other"
+  },
+  {
+    "date": "2026-02-28",
+    "name": "OL_ Personality Emulation",
+    "category": "Other"
+  },
+  {
+    "date": "2026-02-28",
+    "name": "SDD Backend Architecture",
+    "category": "Spec-Driven Dev"
+  },
+  {
+    "date": "2026-02-28",
+    "name": "SDD Cloud Deployment & OAuth",
+    "category": "Spec-Driven Dev"
+  },
+  {
+    "date": "2026-02-28",
+    "name": "SDD Context Graph",
+    "category": "Spec-Driven Dev"
+  },
+  {
+    "date": "2026-02-28",
+    "name": "SDD Decision Trace",
+    "category": "Spec-Driven Dev"
+  },
+  {
+    "date": "2026-02-28",
+    "name": "SDD Frontend Architecture",
+    "category": "Spec-Driven Dev"
+  },
+  {
+    "date": "2026-02-28",
+    "name": "SDD LLM & RAG  Integration",
+    "category": "Spec-Driven Dev"
+  },
+  {
+    "date": "2026-02-28",
+    "name": "SDD Multi-Prompt Returns",
+    "category": "Spec-Driven Dev"
+  },
+  {
+    "date": "2026-02-28",
+    "name": "SDD NIST Standards",
+    "category": "Spec-Driven Dev"
+  },
+  {
+    "date": "2026-02-28",
+    "name": "SDD Provenance",
+    "category": "Spec-Driven Dev"
+  },
+  {
+    "date": "2026-02-28",
+    "name": "SDD Test & Validation",
+    "category": "Spec-Driven Dev"
+  },
+  {
+    "date": "2026-03-01",
+    "name": "OpenClaw_ Official Docs",
+    "category": "OpenClaw"
+  },
+  {
+    "date": "2026-03-01",
+    "name": "OpenClaw_ Optimization",
+    "category": "OpenClaw"
+  },
+  {
+    "date": "2026-03-05",
+    "name": "Rob USAF Career Docs",
+    "category": "Career/Personal"
+  },
+  {
+    "date": "2026-03-12",
+    "name": "Unified Command Center - Architecture",
+    "category": "Other"
+  },
+  {
+    "date": "2026-03-18",
+    "name": "Convo Splitter & Repair",
+    "category": "Other"
+  },
+  {
+    "date": "2026-03-18",
+    "name": "Intent Engineering",
+    "category": "Other"
+  },
+  {
+    "date": "2026-03-20",
+    "name": "Bidlink",
+    "category": "Other"
+  },
+  {
+    "date": "2026-03-20",
+    "name": "Multi-Convo Transcript Repair",
+    "category": "Other"
+  },
+  {
+    "date": "2026-03-22",
+    "name": "BURNER_ G-Drive SSOT Organization",
+    "category": "Other"
+  },
+  {
+    "date": "2026-03-22",
+    "name": "OutPace Doctrine_ Rick",
+    "category": "OutPace"
+  },
+  {
+    "date": "2026-03-22",
+    "name": "Rob Fekete \u2014 Operational Profile",
+    "category": "Career/Personal"
+  },
+  {
+    "date": "2026-03-22",
+    "name": "Transcript Repair",
+    "category": "Other"
+  },
+  {
+    "date": "2026-03-25",
+    "name": "BURNER_ACFT_TEARDOWN",
+    "category": "Other"
+  }
+];
+const peopleCats = {
+  "Core": [
+    {
+      "name": "Rob Fekete",
+      "role": "The Architect"
+    }
+  ],
+  "Family": [
+    {
+      "name": "Karen Fekete",
+      "role": "Rob's wife"
+    },
+    {
+      "name": "Vincent Barnard",
+      "role": "Medical appeal"
+    }
+  ],
+  "Business": [
+    {
+      "name": "Michael T. Edgar",
+      "role": "SelectGlobal"
+    },
+    {
+      "name": "J.C. Henry",
+      "role": "Capitol Precision"
+    },
+    {
+      "name": "Dr. Kizzy Parks",
+      "role": "GovCon"
+    }
+  ],
+  "Creative": [
+    {
+      "name": "Wil Trugmann",
+      "role": "Fictional character"
+    }
+  ]
+};
+
+let currentCategory = 'all';
+let currentSearch = '';
+
+function renderNotebooks() {
+    const list = document.getElementById('notebook-list');
+    let filtered = notebooks;
+    
+    if (currentCategory !== 'all') {
+        filtered = filtered.filter(nb => nb.category === currentCategory);
+    }
+    if (currentSearch) {
+        const q = currentSearch.toLowerCase();
+        filtered = filtered.filter(nb => 
+            nb.name.toLowerCase().includes(q) || 
+            nb.sourceNames.some(s => s.toLowerCase().includes(q))
+        );
+    }
+    
+    list.innerHTML = filtered.map(nb => {
+        let badges = '';
+        if (nb.name.includes('Vincent')) badges += '<span class="hot-badge">HOT</span> ';
+        if (nb.name.includes('Karen')) badges += '<span class="sensitive-badge">SENSITIVE</span> ';
+        if (nb.shared) badges += '<span class="badge">Shared</span>';
+        
+        const sources = nb.sourceNames.map(s => `<div>• ${s}</div>`).join('');
+        
+        return `<div class="nb-card" id="nb-${nb.name.replace(/[^a-zA-Z0-9]/g, '_')}">
+            <div class="title">${nb.emoji} ${badges}${nb.name}</div>
+            <div class="meta">
+                <span>📂 ${nb.sources} sources</span>
+                <span>📝 ${nb.artifacts} artifacts</span>
+                <span>💬 ${nb.chats} chats</span>
+                <span>📏 ${nb.sizeKB} KB</span>
+                <span>📅 ${nb.created}</span>
+                <span class="badge">${nb.category}</span>
+            </div>
+            ${nb.sources > 0 ? `<div class="expand-btn" onclick="this.parentElement.classList.toggle('expanded')">▸ Show ${nb.sources} sources</div><div class="sources-list">${sources}</div>` : ''}
+        </div>`;
+    }).join('');
+}
+
+function filterCategory(cat) {
+    currentCategory = cat;
+    document.querySelectorAll('.cat-item').forEach(el => el.classList.remove('active'));
+    event.target.closest('.cat-item').classList.add('active');
+    renderNotebooks();
+}
+
+function filterSearch(q) {
+    currentSearch = q;
+    renderNotebooks();
+}
+
+function scrollToNotebook(partial) {
+    showView('inventory');
+    document.getElementById('searchBox').value = partial;
+    currentSearch = partial;
+    renderNotebooks();
+}
+
+function showView(view) {
+    ['inventory', 'charts', 'timeline', 'people', 'domains'].forEach(v => {
+        document.getElementById('view-' + v).style.display = v === view ? 'block' : 'none';
+    });
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    event.target.classList.add('active');
+    
+    if (view === 'charts') renderCharts();
+    if (view === 'timeline') renderTimeline();
+    if (view === 'people') renderPeople();
+    if (view === 'domains') renderDomains();
+}
+
+function renderCharts() {
+    // Category chart
+    const maxCount = Math.max(...catStats.map(c => c.count));
+    document.getElementById('cat-chart').innerHTML = catStats
+        .sort((a, b) => b.count - a.count)
+        .map(c => `<div class="bar-row">
+            <div class="bar-label">${c.name}</div>
+            <div class="bar" style="width: ${(c.count / maxCount) * 100}%"></div>
+            <div class="bar-value">${c.count}</div>
+        </div>`).join('');
+    
+    // Size chart
+    const topSize = [...notebooks].sort((a, b) => b.sizeKB - a.sizeKB).slice(0, 20);
+    const maxSize = topSize[0].sizeKB;
+    document.getElementById('size-chart').innerHTML = topSize.map(nb => `<div class="bar-row">
+        <div class="bar-label" title="${nb.name}">${nb.name.substring(0, 25)}${nb.name.length > 25 ? '...' : ''}</div>
+        <div class="bar" style="width: ${(nb.sizeKB / maxSize) * 100}%"></div>
+        <div class="bar-value">${(nb.sizeKB / 1024).toFixed(0)} MB</div>
+    </div>`).join('');
+    
+    // Source chart
+    const topSrc = [...notebooks].sort((a, b) => b.sources - a.sources).slice(0, 20);
+    const maxSrc = topSrc[0].sources;
+    document.getElementById('source-chart').innerHTML = topSrc.map(nb => `<div class="bar-row">
+        <div class="bar-label" title="${nb.name}">${nb.name.substring(0, 25)}${nb.name.length > 25 ? '...' : ''}</div>
+        <div class="bar" style="width: ${(nb.sources / maxSrc) * 100}%"></div>
+        <div class="bar-value">${nb.sources}</div>
+    </div>`).join('');
+}
+
+function renderTimeline() {
+    document.getElementById('timeline').innerHTML = timelineData.map(t => `<div class="tl-item">
+        <div class="date">${t.date}</div>
+        <div class="tl-name">${t.name}</div>
+        <div class="tl-cat">${t.category}</div>
+    </div>`).join('');
+}
+
+function renderPeople() {
+    let html = '';
+    for (const [cat, people] of Object.entries(peopleCats)) {
+        html += `<div class="person-cat"><h4>${cat}</h4><div class="people-grid">`;
+        html += people.map(p => `<div class="person-card">
+            <div class="p-name">${p.name}</div>
+            <div class="p-role">${p.role}</div>
+        </div>`).join('');
+        html += '</div></div>';
+    }
+    
+    html += `<div class="person-cat"><h4>Military Chain of Command (${30}+ officers)</h4>
+        <p style="color:#8b949e;font-size:13px;">Full list of 50+ military officers found across career documents, OPRs, and performance reports. See people-from-notebooks.md for complete roster.</p></div>`;
+    html += `<div class="person-cat"><h4>Medical Providers (${35}+ doctors)</h4>
+        <p style="color:#8b949e;font-size:13px;">35+ physicians found across Karen Fekete medical records and Vincent Barnard medical notebooks. See people-from-notebooks.md for complete list.</p></div>`;
+    
+    document.getElementById('people-network').innerHTML = html;
+}
+
+function renderDomains() {
+    const domains = [
+        {name: 'Defense Logistics & Supply Chain', count: 22, desc: 'DLA, NSN/NIIN, reverse engineering'},
+        {name: 'Spec-Driven Development (SDD)', count: 14, desc: '13 SDD notebooks + Spec Kit'},
+        {name: 'AI Architecture & Orchestration', count: 10, desc: 'Multi-model pipelines, agents'},
+        {name: 'Government Contracting', count: 8, desc: 'Pipeline, capture, business dev'},
+        {name: 'OpenClaw Platform', count: 6, desc: 'Multi-agent orchestration'},
+        {name: 'AFGSC & Strategic Command', count: 5, desc: 'B-52J, OTA, Showcase'},
+        {name: 'Medical Records & Health', count: 4, desc: 'Karen, Vincent medical'},
+        {name: 'VA Benefits & Disability', count: 3, desc: 'CUE claims, disability ratings'},
+        {name: 'Career & Personnel', count: 3, desc: 'USAF career, operational profile'},
+        {name: 'AI Safety & Guardrails', count: 2, desc: 'Gemini safety, SneakyPrompt'},
+        {name: 'Creative Writing', count: 2, desc: 'Wil Trugmann, ManBearPig'},
+        {name: 'Digital Twin', count: 3, desc: 'Cognitive replication, personality'},
+        {name: 'Orbital Logistics', count: 2, desc: 'Space cargo fitment'},
+        {name: 'RFID & Spectrum', count: 2, desc: 'Strategic audit, defense'},
+        {name: 'NotebookLM Meta', count: 4, desc: 'Workflows, MCP, optimization'},
+    ];
+    
+    const maxD = Math.max(...domains.map(d => d.count));
+    document.getElementById('domain-map').innerHTML = `<div class="bar-chart">` + 
+        domains.sort((a,b) => b.count - a.count).map(d => `<div class="bar-row">
+            <div class="bar-label" title="${d.desc}">${d.name}</div>
+            <div class="bar" style="width: ${(d.count / maxD) * 100}%"></div>
+            <div class="bar-value">${d.count}</div>
+        </div>`).join('') + '</div>' +
+        '<p style="margin-top:16px;color:#8b949e;font-size:13px;">See knowledge-map.md for detailed domain analysis including cross-domain connections and gap analysis.</p>';
+}
+
+// Initial render
+renderNotebooks();
+</script>
+</body>
+</html>
