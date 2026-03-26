@@ -5,31 +5,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Commander's Update Brief — OutPace AI</title>
 <style>
-  /* ===== AUTH GATE ===== */
-  #auth-gate {
-    position: fixed; top:0; left:0; width:100%; height:100%;
-    background: #0a1628;
-    display: flex; align-items: center; justify-content: center;
-    z-index: 9999; flex-direction: column; gap: 16px;
-  }
+  #auth-gate { position: fixed; top:0; left:0; width:100%; height:100%; background: #0a1628; display: flex; align-items: center; justify-content: center; z-index: 9999; flex-direction: column; gap: 16px; }
   #auth-gate.hidden { display: none; }
   #auth-gate h2 { color: #e0e4ea; font-family: 'Segoe UI', sans-serif; font-size: 18px; letter-spacing: 1px; text-transform: uppercase; }
-  #auth-gate input {
-    background: #132240; border: 1px solid rgba(192,198,208,0.2); color: #f0f2f5;
-    padding: 12px 20px; font-size: 16px; border-radius: 6px; text-align: center;
-    width: 200px; font-family: 'Segoe UI', sans-serif; letter-spacing: 4px;
-  }
+  #auth-gate input { background: #132240; border: 1px solid rgba(192,198,208,0.2); color: #f0f2f5; padding: 12px 20px; font-size: 16px; border-radius: 6px; text-align: center; width: 200px; font-family: 'Segoe UI', sans-serif; letter-spacing: 4px; }
   #auth-gate input:focus { outline: none; border-color: #3498db; }
   #auth-gate .error { color: #e74c3c; font-size: 13px; min-height: 20px; }
   #dashboard-content { display: none; }
   #dashboard-content.visible { display: block; }
-  :root {
-    --navy: #0a1628; --navy-mid: #132240; --navy-light: #1a3058;
-    --platinum: #c0c6d0; --platinum-light: #e0e4ea;
-    --accent-red: #e74c3c; --accent-amber: #f39c12; --accent-green: #27ae60; --accent-blue: #3498db;
-    --text-primary: #f0f2f5; --text-secondary: #9aa5b4; --text-muted: #6b7a8d;
-    --border: rgba(192,198,208,0.12); --card-bg: rgba(19,34,64,0.6); --card-hover: rgba(26,48,88,0.8);
-  }
+  :root { --navy: #0a1628; --navy-mid: #132240; --navy-light: #1a3058; --platinum: #c0c6d0; --platinum-light: #e0e4ea; --accent-red: #e74c3c; --accent-amber: #f39c12; --accent-green: #27ae60; --accent-blue: #3498db; --text-primary: #f0f2f5; --text-secondary: #9aa5b4; --text-muted: #6b7a8d; --border: rgba(192,198,208,0.12); --card-bg: rgba(19,34,64,0.6); --card-hover: rgba(26,48,88,0.8); }
   * { margin:0; padding:0; box-sizing:border-box; }
   body { font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif; background: var(--navy); color: var(--text-primary); min-height: 100vh; line-height: 1.5; }
   .header { background: linear-gradient(135deg, var(--navy) 0%, var(--navy-mid) 100%); border-bottom: 1px solid var(--border); padding: 20px 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
@@ -101,16 +85,16 @@
     <div class="subtitle">OutPace AI — Combined Agent Operations Center</div>
   </div>
   <div class="header-right">
-    <div class="date">Wednesday, March 25, 2026</div>
-    <div class="time">Generated 0817 CT • Next refresh: Tomorrow 0800</div>
+    <div class="date">Thursday, March 26, 2026</div>
+    <div class="time">Generated 0800 CT • Next refresh: Tomorrow 0800</div>
   </div>
 </div>
 
 <div class="status-bar">
-  <div class="status-chip"><span class="dot dot-red"></span> 3 Action Required</div>
-  <div class="status-chip"><span class="dot dot-amber"></span> 5 Overdue Tasks</div>
-  <div class="status-chip"><span class="dot dot-green"></span> 3 Crons Active</div>
-  <div class="status-chip"><span class="dot dot-blue"></span> OpenClaw 2026.3.23-2</div>
+  <div class="status-chip"><span class="dot dot-red"></span> 4 Action Required</div>
+  <div class="status-chip"><span class="dot dot-amber"></span> 7 Overdue Tasks</div>
+  <div class="status-chip"><span class="dot dot-green"></span> 4 Crons Active</div>
+  <div class="status-chip"><span class="dot dot-blue"></span> 🚨 Tax: 20 days</div>
 </div>
 
 <div class="tabs">
@@ -129,34 +113,40 @@
         <thead><tr><th>From</th><th>Subject</th><th>Action</th><th>Status</th></tr></thead>
         <tbody>
           <tr>
-            <td><strong>Trinity Allman</strong><br><span style="color:var(--text-muted)">Coleman Research Group</span></td>
-            <td>Following-up on New Request: Aerospace & Defense — AI Drone Technology</td>
-            <td>Second outreach (first was 3/24). Expert network consult — directly in your lane.</td>
+            <td><strong>Zachary Marrs</strong><br><span style="color:var(--text-muted)">Coleman Research Group</span></td>
+            <td>New Request from Coleman: Defense (Arxis)</td>
+            <td>Expert network consult — defense portfolio. New inbound. $250-500/hr.</td>
             <td><span class="badge badge-red">Reply Today</span></td>
           </tr>
           <tr>
             <td><strong>Abbi Johnson</strong><br><span style="color:var(--text-muted)">AMJ Consulting</span></td>
-            <td>Site 525 — Contracting pathways paper for Muscatatuck Training Center (INNG)</td>
-            <td>Review paper + provide pricing. 2 days waiting.</td>
+            <td>Site 525 — Contracting pathways paper for MuTC (INNG)</td>
+            <td>Review paper + provide pricing. 3 days waiting. Intel brief ready: <code>memory/site525-mutc-intel.md</code></td>
             <td><span class="badge badge-red">Reply Today</span></td>
           </tr>
           <tr>
-            <td><strong>Shauna McGee Kinney</strong><br><span style="color:var(--text-muted)">LinkedIn message</span></td>
-            <td>New LinkedIn message (robert.joseph.fekete)</td>
-            <td>Check message — unknown contact</td>
+            <td><strong>Michael Edgar</strong><br><span style="color:var(--text-muted)">SelectGlobal — LinkedIn + Google Sheets</span></td>
+            <td>FCL_SOFA_DCA_Pairing shared + LinkedIn messages (multiple)</td>
+            <td>Shared 40-country tracker spreadsheet. Messaging since 3/22. Roger on stand-down. <strong>Either clear Roger or reply directly.</strong></td>
+            <td><span class="badge badge-red">Decide Today</span></td>
+          </tr>
+          <tr>
+            <td><strong>Bert Sparrow</strong><br><span style="color:var(--text-muted)">C2TI</span></td>
+            <td>New CI Handbook and Something Else</td>
+            <td>Personal inbox (feketerj). Review — competitive intelligence related.</td>
             <td><span class="badge badge-amber">Review</span></td>
           </tr>
           <tr>
-            <td><strong>Michael Edgar</strong><br><span style="color:var(--text-muted)">LinkedIn message</span></td>
-            <td>New LinkedIn message (robert.joseph.fekete) — 07:28 today</td>
-            <td>Roger's lane. But latest is fresh this morning.</td>
-            <td><span class="badge badge-gray">Roger</span></td>
-          </tr>
-          <tr>
             <td><strong>Walgreens Rx</strong></td>
-            <td>Rx ready for pickup + earlier delay notice (out-of-stock resolved)</td>
+            <td>Rx ready for pickup</td>
             <td>Pick up prescription</td>
             <td><span class="badge badge-amber">Physical</span></td>
+          </tr>
+          <tr>
+            <td><strong>OpenAI</strong><br><span style="color:var(--text-muted)">feketerj@gmail.com</span></td>
+            <td>Your data export is ready</td>
+            <td>Download before link expires. Goes to LLM_Exports Drive folder.</td>
+            <td><span class="badge badge-amber">Download</span></td>
           </tr>
         </tbody>
       </table>
@@ -166,24 +156,24 @@
       <div class="section-title">🟡 Decisions Queued</div>
       <div class="card-grid">
         <div class="card">
-          <div class="card-header"><div class="card-title">GitHub Actions — CI Failures</div><span class="badge badge-red">Failing</span></div>
-          <div class="card-body">4 CI runs failed overnight: R2D2 Nightly Evidence, RAG & Guardian Checks, D2D SSOT Guard, R2D2 SSOT Guard. All on main branch.</div>
-          <div class="card-meta">Decision: Fix CI or disable until Apr 1 reset</div>
+          <div class="card-header"><div class="card-title">Expert Networks — $1,250-2,250 on the table</div><span class="badge badge-red">5+ requests</span></div>
+          <div class="card-body">GLG ×3 (Richard George, Shivangi Jaiswal, Ritwik Chawla) + Coleman ×2 (Trinity Allman, Zachary Marrs) + VisaSQ. Full brief: <code>memory/expert-network-brief.md</code></div>
+          <div class="card-meta">Decision: GO on any/all → Rick drafts acceptance</div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">🚨 Taxes — 20 Days Left</div><span class="badge badge-red">Apr 15</span></div>
+          <div class="card-body">Complex year: military retirement + OutPace + state change + VA. CPA shortlist ready: <code>memory/cpa-shortlist-kc.md</code>. Call THIS WEEK — offices close for rush after next week.</div>
+          <div class="card-meta">Decision: File or extend? CPA or self-file?</div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">GitHub PAT Expiring + CI Failures</div><span class="badge badge-red">Failing</span></div>
+          <div class="card-body">PAT about to expire (email 3/25). 4 CI runs failed overnight (R2D2 ×3, D2D ×1). Actions at 90% of 2,000 min (resets Apr 1). Disable broken workflows to stop burning minutes.</div>
+          <div class="card-meta">Decision: Renew PAT + fix CI or disable until Apr 1</div>
         </div>
         <div class="card">
           <div class="card-header"><div class="card-title">TechSmith Screencast Pro</div><span class="badge badge-amber">Apr 7</span></div>
-          <div class="card-body">$99.99 auto-renewal scheduled for April 7, 2026.</div>
-          <div class="card-meta">Decision: Keep or cancel subscription</div>
-        </div>
-        <div class="card">
-          <div class="card-header"><div class="card-title">Todoist</div><span class="badge badge-amber">10+ Overdue</span></div>
-          <div class="card-body">Todoist flagged 10+ overdue tasks this morning. Mirrors Google Tasks.</div>
-          <div class="card-meta">Decision: Triage or bulk-defer</div>
-        </div>
-        <div class="card">
-          <div class="card-header"><div class="card-title">Karen — Google Security Alert</div><span class="badge badge-amber">Check</span></div>
-          <div class="card-body">Security alert for feketekm@gmail.com (05:54 today) + iPad setup prompt. May be related.</div>
-          <div class="card-meta">Verify this was Karen setting up iPad</div>
+          <div class="card-body">$99.99 auto-renewal in 12 days.</div>
+          <div class="card-meta">Decision: Keep or cancel</div>
         </div>
       </div>
     </div>
@@ -200,15 +190,15 @@
         <div class="cal-title">🐕 Dog Time — Yard / Walk / Play</div>
         <div class="cal-duration">1 hr</div>
       </div>
-      <p style="color: var(--text-muted); font-size: 13px; margin-top: 8px;">No meetings scheduled. Open day for deep work.</p>
+      <p style="color: var(--text-muted); font-size: 13px; margin-top: 8px;">No external meetings. Open day — deep work + clearing overdue items.</p>
     </div>
 
     <div class="section">
       <div class="section-title">🏗️ Today's Active Workstream</div>
       <div class="card">
-        <div class="card-header"><div class="card-title">Architecture Prototype — Autonomous Work Loops</div><span class="badge badge-blue">In Progress</span></div>
-        <div class="card-body">Morning brainstorm session (05:40–07:29) defined three-layer architecture: lifecycle manager + state machine + workflow execution. Rob building persistent NotebookLM notebook from session transcript. Next: familiarize with Karpathy's autoresearch, then build experimental workflows starting with zero-stakes fake task.</div>
-        <div class="card-meta">HANDOFF.md in workspace • Session transcript in ~/Downloads</div>
+        <div class="card-header"><div class="card-title">Auto-Research Notebook + Wiring Plan</div><span class="badge badge-blue">Rob Building</span></div>
+        <div class="card-body">Rob building auto-research + GSD notebooks from brainstorm session transcript. Rick wrote wiring plan + 15 query prompts for the notebooks. Standing by for notebook IDs. Phase 0 config patch (compaction tuning) ready to deploy on GO.</div>
+        <div class="card-meta">Plan: <code>C:\CAOC\GLOCs\Intent_Driven_Workflow\docs\WIRING_PLAN_2026-03-26.md</code></div>
       </div>
     </div>
 
@@ -218,42 +208,42 @@
   <!-- ===== WEEK TAB ===== -->
   <div class="tab-panel" id="week">
     <div class="section">
-      <div class="section-title">📅 Week of March 25–31, 2026</div>
+      <div class="section-title">📅 Week of March 26 – April 1, 2026</div>
       <div class="week-grid">
         <div class="day-col">
-          <div class="day-header today">Tue 25 (Today)</div>
+          <div class="day-header today">Thu 26 (Today)</div>
           <div class="week-event"><div class="week-event-time">12:00p</div><div class="week-event-title">🍽️ Lunch</div></div>
           <div class="week-event"><div class="week-event-time">4:00p</div><div class="week-event-title">🐕 Dog Time</div></div>
         </div>
         <div class="day-col">
-          <div class="day-header">Wed 26</div>
+          <div class="day-header">Fri 27</div>
           <div class="week-event"><div class="week-event-time">12:00p</div><div class="week-event-title">🍽️ Lunch</div></div>
           <div class="week-event"><div class="week-event-time">4:00p</div><div class="week-event-title">🐕 Dog Time</div></div>
         </div>
         <div class="day-col">
-          <div class="day-header">Thu 27</div>
+          <div class="day-header">Sat 28</div>
+          <div class="week-event"><div class="week-event-time">4:00p</div><div class="week-event-title">🐕 Dog Time</div></div>
+        </div>
+        <div class="day-col">
+          <div class="day-header">Sun 29</div>
+          <div class="week-event"><div class="week-event-time">4:00p</div><div class="week-event-title">🐕 Dog Time</div></div>
+        </div>
+        <div class="day-col">
+          <div class="day-header">Mon 30</div>
           <div class="week-event"><div class="week-event-time">12:00p</div><div class="week-event-title">🍽️ Lunch</div></div>
           <div class="week-event"><div class="week-event-time">4:00p</div><div class="week-event-title">🐕 Dog Time</div></div>
         </div>
         <div class="day-col">
-          <div class="day-header">Fri 28</div>
-          <div class="week-event"><div class="week-event-time">4:00p</div><div class="week-event-title">🐕 Dog Time</div></div>
-        </div>
-        <div class="day-col">
-          <div class="day-header">Sat 29</div>
-          <div class="week-event"><div class="week-event-time">4:00p</div><div class="week-event-title">🐕 Dog Time</div></div>
-        </div>
-        <div class="day-col">
-          <div class="day-header">Sun 30</div>
+          <div class="day-header">Tue 31</div>
           <div class="week-event"><div class="week-event-time">12:00p</div><div class="week-event-title">🍽️ Lunch</div></div>
           <div class="week-event"><div class="week-event-time">4:00p</div><div class="week-event-title">🐕 Dog Time</div></div>
         </div>
         <div class="day-col">
-          <div class="day-header">Mon 31</div>
-          <div class="week-event" style="border-left-color: var(--accent-amber);"><div class="week-event-time">—</div><div class="week-event-title">⏰ GitHub reset (Apr 1)</div></div>
+          <div class="day-header">Wed Apr 1</div>
+          <div class="week-event" style="border-left-color: var(--accent-green);"><div class="week-event-time">—</div><div class="week-event-title">✅ GitHub mins reset</div></div>
         </div>
       </div>
-      <p style="color: var(--text-muted); font-size: 12px; margin-top: 12px;">Clean week. No external meetings. Deep work window for architecture prototype and clearing overdue items.</p>
+      <p style="color: var(--text-muted); font-size: 12px; margin-top: 12px;">Clean week. No external meetings. Tax CPA call is the top outside action.</p>
     </div>
     <div class="section">
       <div class="section-title">⏰ Key Dates Ahead</div>
@@ -263,6 +253,7 @@
           <tr><td>Apr 1</td><td>GitHub Actions minutes reset (2,000)</td><td><span class="badge badge-blue">Auto</span></td></tr>
           <tr><td>Apr 3</td><td>M&Q NSF CyberAI SFS Reviewer — Due</td><td><span class="badge badge-amber">Deadline</span></td></tr>
           <tr><td>Apr 7</td><td>TechSmith Screencast Pro — $99.99 auto-renew</td><td><span class="badge badge-red">$$</span></td></tr>
+          <tr><td>Apr 15</td><td>🚨 Federal + MO Tax Filing Deadline</td><td><span class="badge badge-red">DEADLINE</span></td></tr>
           <tr><td>Jul 4</td><td>Nonprofit Launch target</td><td><span class="badge badge-blue">Milestone</span></td></tr>
         </tbody>
       </table>
@@ -272,13 +263,18 @@
   <!-- ===== TASKS TAB ===== -->
   <div class="tab-panel" id="tasks">
     <div class="section">
-      <div class="section-title">🔴 Overdue (Google Tasks)</div>
+      <div class="section-title">🔴 Overdue (Google Tasks — >2 Days Late)</div>
       <table>
         <thead><tr><th>Task</th><th>Due</th><th>Days Late</th><th>Owner</th></tr></thead>
         <tbody>
-          <tr><td><strong>MO Taxes Notice</strong></td><td>Mar 14</td><td><span class="badge badge-red">11 days</span></td><td>Rob</td></tr>
-          <tr><td><strong>Camper battery</strong></td><td>Mar 15</td><td><span class="badge badge-red">10 days</span></td><td>Rob</td></tr>
-          <tr><td><strong>Jessica Powell — draft replies (x2)</strong></td><td>Mar 19</td><td><span class="badge badge-amber">6 days</span></td><td>Rob (review)</td></tr>
+          <tr><td><strong>SBA SDVOSB Check</strong></td><td>Feb 11</td><td><span class="badge badge-red">43 days</span></td><td>Rob — Guide ready: <code>memory/sdvosb-vetcert-guide.md</code></td></tr>
+          <tr><td><strong>JD Folder & Product Update</strong></td><td>Feb 11</td><td><span class="badge badge-red">43 days</span></td><td>Rob</td></tr>
+          <tr><td><strong>Schwab</strong></td><td>Feb 11</td><td><span class="badge badge-red">43 days</span></td><td>Rob</td></tr>
+          <tr><td><strong>B2B Dashboard Deployment</strong></td><td>Feb 14</td><td><span class="badge badge-red">40 days</span></td><td>Rob</td></tr>
+          <tr><td><strong>Network & Influence Map</strong></td><td>Feb 21</td><td><span class="badge badge-red">33 days</span></td><td>Rob</td></tr>
+          <tr><td><strong>MO Taxes Notice</strong></td><td>Mar 14</td><td><span class="badge badge-red">12 days</span></td><td>Rob — Guide ready: <code>memory/mo-vehicle-registration.md</code></td></tr>
+          <tr><td><strong>Camper battery</strong></td><td>Mar 15</td><td><span class="badge badge-red">11 days</span></td><td>Rob — Specs ready: <code>memory/rv-battery-specs.md</code></td></tr>
+          <tr><td><strong>Jessica Powell draft replies (×2)</strong></td><td>Mar 19</td><td><span class="badge badge-amber">7 days</span></td><td>Rob (review)</td></tr>
         </tbody>
       </table>
     </div>
@@ -287,9 +283,11 @@
       <table>
         <thead><tr><th>ID</th><th>Task</th><th>Status</th><th>Owner</th></tr></thead>
         <tbody>
-          <tr><td>#053</td><td><strong>PIEE Registration → BAA Submission (Sanford)</strong></td><td><span class="badge badge-red">Not Started</span></td><td>Rob</td></tr>
-          <tr><td>#059</td><td><strong>FSM + Multi-Notebook Orchestration Pipeline</strong></td><td><span class="badge badge-blue">Design Complete — Build Starting</span></td><td>Rick + Rob</td></tr>
-          <tr><td>#037</td><td><strong>SBA SDVOSB — Restart Application</strong></td><td><span class="badge badge-amber">Restarting</span></td><td>Rick / Rob</td></tr>
+          <tr><td>#062</td><td><strong>🚨 Federal + MO Taxes — Apr 15</strong></td><td><span class="badge badge-red">CPA THIS WEEK</span></td><td>Rob</td></tr>
+          <tr><td>#053</td><td><strong>PIEE Registration → BAA Submission (Sanford)</strong></td><td><span class="badge badge-red">Blocked — Rob to register</span></td><td>Rob</td></tr>
+          <tr><td>#037</td><td><strong>SBA SDVOSB — Apply at certifications.sba.gov</strong></td><td><span class="badge badge-amber">Guide done — Rob to apply</span></td><td>Rob</td></tr>
+          <tr><td>#061</td><td><strong>MO Vehicle Registration (3 vehicles)</strong></td><td><span class="badge badge-red">MAX penalty ($600)</span></td><td>Rob</td></tr>
+          <tr><td>#059</td><td><strong>FSM + Autonomous Pipeline</strong></td><td><span class="badge badge-blue">Wiring plan written — standing by</span></td><td>Rick + Rob</td></tr>
         </tbody>
       </table>
     </div>
@@ -299,12 +297,25 @@
         <thead><tr><th>ID</th><th>Task</th><th>Status</th><th>Priority</th></tr></thead>
         <tbody>
           <tr><td>—</td><td>Vincent Medical Appeal</td><td><span class="badge badge-amber">Hot — mostly done</span></td><td>High</td></tr>
-          <tr><td>—</td><td>Request fresh OpenAI data export</td><td><span class="badge badge-gray">Pending</span></td><td>Medium</td></tr>
-          <tr><td>—</td><td>Stand-up mouse adapter — check 2 drivers</td><td><span class="badge badge-gray">Pending</span></td><td>Low</td></tr>
-          <tr><td>#058</td><td>LLM Data Export Analysis</td><td><span class="badge badge-green">✅ Complete</span></td><td>—</td></tr>
-          <tr><td>#022</td><td>MTS Forge LinkedIn Content</td><td><span class="badge badge-green">✅ Delivered</span></td><td>—</td></tr>
+          <tr><td>—</td><td>OpenAI data export — download ready</td><td><span class="badge badge-amber">Download link live</span></td><td>Medium</td></tr>
           <tr><td>#054</td><td>SpaceWERX Orbital Warehouse Research</td><td><span class="badge badge-blue">In Progress</span></td><td>High</td></tr>
           <tr><td>#055</td><td>MTS Forge Activation</td><td><span class="badge badge-blue">In Progress</span></td><td>High</td></tr>
+          <tr><td>#058</td><td>LLM Data Export Analysis</td><td><span class="badge badge-green">✅ Complete (25 reports)</span></td><td>—</td></tr>
+          <tr><td>#022</td><td>MTS Forge LinkedIn Content</td><td><span class="badge badge-green">✅ Delivered (13 posts)</span></td><td>—</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="section">
+      <div class="section-title">🤖 Proactive Sweep (Last: 02:35 CT today)</div>
+      <table>
+        <thead><tr><th>Item</th><th>Output</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td>Guitar 5-day practice plan</td><td><code>memory/guitar-5day-plan.md</code></td><td><span class="badge badge-green">✅ Done</span></td></tr>
+          <tr><td>Site 525 / MuTC intel brief</td><td><code>memory/site525-mutc-intel.md</code></td><td><span class="badge badge-green">✅ Done</span></td></tr>
+          <tr><td>SDVOSB VetCert guide</td><td><code>memory/sdvosb-vetcert-guide.md</code></td><td><span class="badge badge-green">✅ Done</span></td></tr>
+          <tr><td>IRS address change guide</td><td><code>memory/irs-address-change-guide.md</code></td><td><span class="badge badge-green">✅ Done</span></td></tr>
+          <tr><td>CPA shortlist (KC/Belton)</td><td><code>memory/cpa-shortlist-kc.md</code></td><td><span class="badge badge-green">✅ Done</span></td></tr>
+          <tr><td>Tax filing brief</td><td><code>memory/tax-filing-brief.md</code></td><td><span class="badge badge-green">✅ Done</span></td></tr>
         </tbody>
       </table>
     </div>
@@ -313,10 +324,12 @@
       <table>
         <thead><tr><th>Item</th><th>What's Needed</th></tr></thead>
         <tbody>
-          <tr><td>#023 — CAOC Dashboard</td><td>Rob review</td></tr>
-          <tr><td>#024 — OutPace Website</td><td>Rob review</td></tr>
-          <tr><td>#004 — LinkedIn Posting</td><td>Voice, topics, approval process</td></tr>
-          <tr><td>#007 — Nonprofit Launch (Jul 4)</td><td>Specifics on nonprofit type</td></tr>
+          <tr><td>Expert network consults (5+)</td><td>GO/NO-GO on any/all</td></tr>
+          <tr><td>TRICARE spouse payment</td><td>3 diagnostic questions (see brief)</td></tr>
+          <tr><td>Roger status / Michael Edgar</td><td>Clear Roger or reply to Michael</td></tr>
+          <tr><td>3 architecture questions from 3/24</td><td>8-step flow, Roger, deployment model</td></tr>
+          <tr><td>Abbi Johnson / Site 525</td><td>Reply + quote pricing</td></tr>
+          <tr><td>WO-001 T1 final approval</td><td>Approve BBQ test workflow</td></tr>
         </tbody>
       </table>
     </div>
@@ -327,17 +340,17 @@
     <div class="section">
       <div class="section-title">📬 Sent — No Reply</div>
       <div class="follow-up-item">
-        <div class="days" style="color: var(--accent-amber);">1d</div>
+        <div class="days" style="color: var(--accent-amber);">2d</div>
         <div class="detail"><div class="name">Alex Bandar — NSN DB Demo</div><div class="context">Sent Mar 24 re: demo scheduling + Joe Acree caveat. No response yet.</div></div>
         <span class="badge badge-amber">Monitor</span>
       </div>
       <div class="follow-up-item">
-        <div class="days" style="color: var(--accent-amber);">1d</div>
+        <div class="days" style="color: var(--accent-amber);">2d</div>
         <div class="detail"><div class="name">Adam Merchant — Circling Back (LEAP)</div><div class="context">Sent Mar 24 re: task order + JD at LOA. No response yet.</div></div>
         <span class="badge badge-amber">Monitor</span>
       </div>
       <div class="follow-up-item">
-        <div class="days" style="color: var(--text-muted);">5d</div>
+        <div class="days" style="color: var(--text-muted);">6d</div>
         <div class="detail"><div class="name">JC Henry — OBBBA Spend Plan</div><div class="context">Sent Mar 20. No reply. Standing order: check only if he reaches out.</div></div>
         <span class="badge badge-gray">Passive</span>
       </div>
@@ -346,18 +359,23 @@
       <div class="section-title">📥 Inbound — Rob Hasn't Replied</div>
       <div class="follow-up-item">
         <div class="days" style="color: var(--accent-red);">0d</div>
-        <div class="detail"><div class="name">Trinity Allman (Coleman Research)</div><div class="context">Second follow-up this morning (05:43). A&D AI Drone Tech expert consultation. Directly in your lane. Money on the table.</div></div>
+        <div class="detail"><div class="name">Zachary Marrs (Coleman Research)</div><div class="context">New request: Defense (Arxis portfolio). Fresh inbound to rob@outpacesolutions.net.</div></div>
         <span class="badge badge-red">Reply Today</span>
       </div>
       <div class="follow-up-item">
-        <div class="days" style="color: var(--accent-red);">2d</div>
-        <div class="detail"><div class="name">Abbi Johnson (AMJ Consulting)</div><div class="context">"What would you charge?" — Site 525/Muscatatuck contracting pathways. INNG has money.</div></div>
+        <div class="days" style="color: var(--accent-red);">3d</div>
+        <div class="detail"><div class="name">Abbi Johnson (AMJ Consulting)</div><div class="context">"What would you charge?" — Site 525/Muscatatuck contracting pathways. INNG has money. Intel brief ready.</div></div>
         <span class="badge badge-red">Reply Today</span>
+      </div>
+      <div class="follow-up-item">
+        <div class="days" style="color: var(--accent-red);">4d</div>
+        <div class="detail"><div class="name">Michael Edgar (SelectGlobal)</div><div class="context">Multiple LinkedIn messages since 3/22 + shared FCL/SOFA tracker spreadsheet. Roger on stand-down. No one is responding.</div></div>
+        <span class="badge badge-red">Decide</span>
       </div>
       <div class="follow-up-item">
         <div class="days" style="color: var(--accent-amber);">1d</div>
-        <div class="detail"><div class="name">Heidi Stevens (ITC GKC)</div><div class="context">"Keeping caught up?" — International Trade Council check-in (22:00 last night).</div></div>
-        <span class="badge badge-amber">Review</span>
+        <div class="detail"><div class="name">Trinity Allman (Coleman/VisaSQ)</div><div class="context">A&D AI Drone Tech consultation. 3+ touches across two platforms. In your lane.</div></div>
+        <span class="badge badge-amber">Respond</span>
       </div>
     </div>
     <div class="section">
@@ -365,9 +383,9 @@
       <table>
         <thead><tr><th>Agent</th><th>Last Check-In</th><th>Status</th></tr></thead>
         <tbody>
-          <tr><td>Rick</td><td>Today (08:17 CT)</td><td><span class="badge badge-green">Active</span></td></tr>
-          <tr><td>Roger</td><td>Mar 18 (7 days)</td><td><span class="badge badge-amber">On Stand-Down — Awaiting Rob's clearance</span></td></tr>
-          <tr><td>Lemmy</td><td>Mar 18 (7 days)</td><td><span class="badge badge-gray">Role TBD (formerly Samantha)</span></td></tr>
+          <tr><td>Rick</td><td>Today (08:00 CT)</td><td><span class="badge badge-green">Active — morning sync running</span></td></tr>
+          <tr><td>Roger</td><td>Mar 18 (8 days)</td><td><span class="badge badge-amber">On Stand-Down — Awaiting Rob's clearance</span></td></tr>
+          <tr><td>Lemmy</td><td>Mar 18 (8 days)</td><td><span class="badge badge-gray">Role TBD (formerly Samantha)</span></td></tr>
           <tr><td>David</td><td>—</td><td><span class="badge badge-gray">Not deployed</span></td></tr>
           <tr><td>Nick</td><td>—</td><td><span class="badge badge-gray">Not deployed</span></td></tr>
         </tbody>
